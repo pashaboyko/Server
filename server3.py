@@ -2,7 +2,7 @@ import select
 import socket
 import test
 
-SERVER_ADDRESS = ('localhost', 8687)
+SERVER_ADDRESS = ('localhost', 8691)
 
 # Говорит о том, сколько дескрипторов единовременно могут быть открыты
 MAX_CONNECTIONS = 10
@@ -62,12 +62,10 @@ def handle_readables(readables, server):
                     
                 
                 s = test.search()
-                for i in range(len(s)):
-                    print(s[i], end=" ")
-                    k = s[i]
-                    message_to_send = str(k).encode("UTF-8")
-                    resource.send(len(message_to_send).to_bytes(2, byteorder='big'))
-                    resource.send(message_to_send)
+                print(s)
+              
+                message_to_send = s.encode("UTF-8")
+                resource.send(message_to_send)
                 
                 
 
