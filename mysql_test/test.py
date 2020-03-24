@@ -4,25 +4,25 @@ connection = connections.getConnection()
 # Подключиться к базе данных.
 #print("connect successful!")
 def search():
-    try:
-
         with connection.cursor() as cursor:
-
-
-            bar = '234556549830'
-            sql="SELECT * FROM product_new.food WHERE bordercode=%s"
-            cursor.execute(sql, (bar))
+         bar = '2222222222222'
+         sql = "SELECT * FROM product_new.food WHERE bordercode=%s"
+         if(cursor.execute(sql, (bar)) == True):
+           # bar = '234556549830'
+            #sql="SELECT * FROM product_new.food WHERE bordercode=%s"
+            #cursor.execute(sql, (bar))
          #print("cursor.description: ", cursor.description)
             for row in cursor:
                 print(row)
+         else:
+            sql = "SELECT * FROM product_new.clothes WHERE bordercode=%s"
+            if(cursor.execute(sql, (bar)) == True):
+                for row in cursor:
+                  print(row)
 
-    finally:
-    # Закрыть соединение (Close connection).
-         connection.close()
-#search()
+search()
 
 def add_row():
-    try:
         cursor = connection.cursor()
         print("Enter name: ")
         Name = input()
@@ -40,12 +40,9 @@ def add_row():
 
         connection.commit()
 
-    finally:
-        connection.close()
-add_row()
+#add_row()
 
 def delete_row():
-    try:
         cursor = connection.cursor()
         bar = '8197366721'
         sql = "Delete from  product_new.food where bordercode = %s"
@@ -56,6 +53,5 @@ def delete_row():
         for row in cursor:
             print(row)
         connection.commit()
-    finally:
-        connection.close()
 #delete_row()
+connection.close();
