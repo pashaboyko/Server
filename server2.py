@@ -24,7 +24,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 if __name__ == "__main__":
-    HOST, PORT = '', 5003
+    HOST, PORT = '', 5004
     
     # Создаём сервер и указываем, какой класс обрабатывает
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
