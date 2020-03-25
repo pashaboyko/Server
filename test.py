@@ -1,6 +1,12 @@
 import pymysql.cursors
+<<<<<<< HEAD
 import connections
 connection = connections.getConnection()
+=======
+import connectionsPasha
+import json
+connection = connectionsPasha.getConnection()
+>>>>>>> 416e7fa6bed086ddca87690f268f99280c3bba8d
 # Подключиться к базе данных.
 #print("connect successful!")
 def search():
@@ -15,15 +21,21 @@ def search():
             s=[]
             
          #print("cursor.description: ", cursor.description)
+            rv = cursor.fetchall()
+            
+            print (json.dumps(rv,indent=4,ensure_ascii=False,separators=(',', ': ')))
+            
             for row in cursor:
                 s.append(row)
                 print(row)
+                
+
     except:
         print("An exception occurred")
     print (s)
-    return s
-
-#search()
+    return json.dumps(rv,indent=7,ensure_ascii=False,separators=(',', ': '))
+    
+search()
 
 def add_row():
     try:
