@@ -1,12 +1,7 @@
 import pymysql.cursors
-<<<<<<< HEAD
+import json
 import connections
 connection = connections.getConnection()
-=======
-import connectionsPasha
-import json
-connection = connectionsPasha.getConnection()
->>>>>>> 416e7fa6bed086ddca87690f268f99280c3bba8d
 # Подключиться к базе данных.
 #print("connect successful!")
 def search():
