@@ -1,6 +1,6 @@
 import pymysql.cursors
-import connectionsPasha
-connection = connectionsPasha.getConnection()
+import connections
+connection = connections.getConnection()
 # Подключиться к базе данных.
 #print("connect successful!")
 def search():
