@@ -1,0 +1,8 @@
+pika
+Jinja2
+python-json-logger
+pyyaml==3.13
+splunk_handler
+splunk-sdk
+urllib3
+requests
