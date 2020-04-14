@@ -61,6 +61,42 @@ class MySqlCon:
         return data_json
 
 
+    def search_user(self,email,password) :
+        data_json = None
+        try:
+
+            with self.connection.cursor() as cursor:
+
+                sql = "SELECT * FROM product_new.user WHERE email=%s AND password=%s"
+                cursor.execute(sql, (email, password))
+
+                rv = cursor.fetchall()
+
+                data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+
+        except:
+            log.exception('No search')
+
+        return data_json
+
+
+
+    def search_user_bool(self,barcode) -> bool:
+        try:
+
+            with self.connection.cursor() as cursor:
+
+                sql = "SELECT * FROM product_new.user WHERE barcode_user=%s"
+                cursor.execute(sql, (barcode))
+
+                rv = cursor.fetchall()
+                if cursor.rowcount > 0 :
+                    return True
+                else: return False
+
+        except:
+            log.exception('No search')
+            return False
 
     def add_row_to_items(self,name,barcode, price, photo, day, month, year):
         try:
@@ -103,7 +139,8 @@ class MySqlCon:
 def main():
     try:
         con = MySqlCon.get_instance()
-        print(con.search_barcode("345392902983"))
+        print(con.search_user(email = "a.miron@gmail.com", password = "34fdf"))
+        print(con.search_user_bool("276920834954"))
 
     except Exception:
 
