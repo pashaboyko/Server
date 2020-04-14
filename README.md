@@ -1,4 +1,4 @@
-#Server
+## Server
 
 ![ScanPay](Img1.png)
 
@@ -7,20 +7,24 @@ Server-based on aiohttp lib
 
 ```
 ___
-##Functional :
+## Functional :
 
 - Response to user requests :  
+```
         - registration 
         - authorization
         - barcode request
         - edit item on database
         - delete item on database
         - add new item to database
+```
 - Unique token generation
 - Working with database : 
+```
         - conect 
         - requests to database
         - read response from database
+```        
 - Send email at registation 
 
 ---
@@ -29,7 +33,7 @@ ___
 start python file with parameters or config file**
 ```
 
-###Parameters:
+### Parameters:
 - Port
 - Host
 
