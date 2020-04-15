@@ -21,14 +21,11 @@ def json_response(body='', **kwargs):
 
 
 async def login(request):
-
     post_data = await request.post()
-
-
     print(post_data)
 
     try:
-        #print(MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
+        print(MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
         user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
@@ -43,13 +40,23 @@ async def login(request):
 
 
 async def get_user(request):
-    return json_response({'user': str(request.user)})
+    post_data = await request.post()
+    try:
+        item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item, indent=4, ensure_ascii=False, separators=(',', ': '))
+    print(data_json)
+    return json_response(data_json)
 
 
 async def auth_middleware(app, handler):
     async def middleware(request):
         request.user = None
+
         jwt_token = request.headers.get('authorization', None)
+        print(jwt_token)
+        print("jwt_token")
         if jwt_token:
             try:
                 payload = jwt.decode(jwt_token, JWT_SECRET,
@@ -78,7 +85,7 @@ if __name__ == "__main__":
 '''
 log=logg.setup_logging('Server')
 app = web.Application(middlewares=[auth_middleware])
-app.router.add_route('GET', '/get-user', get_user)
+app.router.add_route('POST', '/barcode', get_user)
 app.router.add_route('POST', '/login', login)
 web.run_app(app, port=3000)
 

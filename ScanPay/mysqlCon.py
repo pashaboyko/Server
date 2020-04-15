@@ -21,6 +21,9 @@ class MySqlCon:
 
     _instance = None
 
+
+
+
     @staticmethod
     def get_instance(host=HOST,
                      port=PORT,
@@ -43,7 +46,7 @@ class MySqlCon:
                          cursorclass=cursorclass)
 
     def search_barcode(self, barcode):
-        data_json = None
+        data_dict = None
         try:
 
             with self.connection.cursor() as cursor:
@@ -53,16 +56,26 @@ class MySqlCon:
 
                 rv = cursor.fetchall()
 
-                data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+                if cursor.rowcount > 1:
+                    print("545")
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
 
         except:
             log.exception('No search')
 
-        return data_json
+        return data_dict
 
 
     def search_user(self,email,password) :
-        data_json = None
+        data_dict = None
         try:
 
             with self.connection.cursor() as cursor:
@@ -72,12 +85,24 @@ class MySqlCon:
 
                 rv = cursor.fetchall()
 
-                data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+
+
+                if cursor.rowcount > 1:
+                    print("545")
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
 
         except:
             log.exception('No search')
 
-        return data_json
+        return data_dict
 
 
 
@@ -134,12 +159,18 @@ class MySqlCon:
         finally:
             connection.close()
 
+    class DoesNotExist(BaseException):
+        pass
+
+    class TooManyObjects(BaseException):
+        pass
+
 
 
 def main():
     try:
         con = MySqlCon.get_instance()
-        print(con.search_user(email = "a.miron@gmail.com", password = "34fdf"))
+        print(con.search_user(email = "a.miron@gmail.com", password = "1"))
         print(con.search_user_bool("276920834954"))
 
     except Exception:
@@ -149,13 +180,17 @@ def main():
 
 
 
+
+
+
+
 if __name__ == "__main__":
 
     log_directory = 'log'
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
-    log=logg.setup_logging('Telegram-sender')
+    log=logg.setup_logging('MysqlCon')
 
 
     main()
