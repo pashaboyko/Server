@@ -16,6 +16,6 @@ def setup_logging(project_name: str):
     utc_time = datetime.utcnow().isoformat(timespec='seconds')
     log_filename = f'log/{utc_time}.log'.replace(':', '_')
 
-    logging.config.fileConfig('logging.ini', defaults={'args': (log_filename, 'a', 'utf-8')})
+    logging.config.fileConfig('./logging.ini', defaults={'args': (log_filename, 'a', 'utf-8')})
     log = logging.getLogger(__name__)
     return log
