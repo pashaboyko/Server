@@ -4,18 +4,21 @@ import os
 import logg
 
 
-HOST = '127.0.0.1'
-PORT = 3305
-USER = 'root'
-PASSWORD = '12345678'
-DB = 'product_new'
-CHARSET = 'utf8mb4'
-CURSORCLASS = pymysql.cursors.DictCursor
-'''
+
+
 HOST = '127.0.0.1'
 PORT = 3306
 USER = 'root'
 PASSWORD = 'lock172839465'
+DB = 'product_new'
+CHARSET = 'utf8mb4'
+CURSORCLASS = pymysql.cursors.DictCursor
+'''
+
+HOST = '127.0.0.1'
+PORT = 3305
+USER = 'root'
+PASSWORD = '12345678'
 DB = 'product_new'
 CHARSET = 'utf8mb4'
 CURSORCLASS = pymysql.cursors.DictCursor
