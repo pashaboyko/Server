@@ -14,7 +14,14 @@ JWT_EXP_DELTA_SECONDS = 20
 
 
 def json_response(body='', **kwargs):
-    kwargs['body'] = json.dumps(body or kwargs['body']).encode('utf-8')
+    print(body)
+    kwargs['body'] = json.dumps(body or kwargs['body'], ensure_ascii=False)
+    kwargs['content_type'] = 'application/json'
+    print(kwargs)
+    return web.Response(**kwargs)
+
+def jsons_response(jsons, **kwargs):
+    kwargs['body'] = jsons
     kwargs['content_type'] = 'application/json'
     print(kwargs)
     return web.Response(**kwargs)
@@ -45,9 +52,9 @@ async def get_user(request):
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    data_json = json.dumps(item, indent=4, ensure_ascii=False, separators=(',', ': '))
+    data_json = json.dumps(item)
     print(data_json)
-    return json_response(data_json)
+    return json_response(item)
 
 
 async def auth_middleware(app, handler):

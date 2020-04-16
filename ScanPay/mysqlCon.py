@@ -63,10 +63,12 @@ class MySqlCon:
                     print("34")
                     raise self.DoesNotExist
                 else:
-                    data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict = data
+                    print(data)
+                    print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
 
         except:
             log.exception('No search')
