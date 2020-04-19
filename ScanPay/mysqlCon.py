@@ -5,7 +5,7 @@ import logg
 
 
 
-
+'''
 HOST = '127.0.0.1'
 PORT = 3306
 USER = 'root'
@@ -22,7 +22,7 @@ PASSWORD = '12345678'
 DB = 'product_new'
 CHARSET = 'utf8mb4'
 CURSORCLASS = pymysql.cursors.DictCursor
-'''
+
 
 log=None
 
@@ -60,9 +60,13 @@ class MySqlCon:
         try:
 
             with self.connection.cursor() as cursor:
+                
+                       
+                    
 
-                sql = "SELECT * FROM product_new.food WHERE bordercode=%s"
-                cursor.execute(sql, (barcode))
+
+                sql = "SELECT name,bordercode,price,points  from product_new.food where  bordercode =%s union SELECT name,bordercode,price,points from product_new.clothes where  bordercode =%s  union  SELECT name,bordercode,price,points from product_new.prod where  bordercode =%s"
+                cursor.execute(sql, (barcode,barcode,barcode))
 
                 rv = cursor.fetchall()
 
@@ -77,8 +81,8 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict = data
-                    print(data)
-                    print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
+                   # print(data)
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
 
         except:
             log.exception('No search')
@@ -182,8 +186,9 @@ class MySqlCon:
 def main():
     try:
         con = MySqlCon.get_instance()
-        print(con.search_user(email = "a.miron@gmail.com", password = "1"))
-        print(con.search_user_bool("276920834954"))
+        #print(con.search_user(email = "a.miron@gmail.com", password = "1"))
+        #print(con.search_user_bool("276920834954"))
+        print(con.search_barcode('234556549830'))
 
     except Exception:
 
