@@ -1,0 +1,5 @@
+[2020-04-21 20:20:59,611][ERROR][logg.search_barcode_moreinfo:222] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 190, in search_barcode_moreinfo
+    sql = "SELECT * from product_new.food where  bordercode =%s" %tablename
+NameError: name 'tablename' is not defined

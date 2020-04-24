@@ -65,7 +65,7 @@ class MySqlCon:
                     
 
 
-                sql = "SELECT name,bordercode,price,points  from product_new.food where  bordercode =%s union SELECT name,bordercode,price,points from product_new.clothes where  bordercode =%s  union  SELECT name,bordercode,price,points from product_new.prod where  bordercode =%s"
+                sql = "SELECT name,bordercode,price,photo,category,points  from product_new.food where  bordercode =%s union SELECT name,bordercode,price,photo,category,points from product_new.clothes where  bordercode =%s  union  SELECT name,bordercode,price,photo,category,points from product_new.prod where  bordercode =%s"
                 cursor.execute(sql, (barcode,barcode,barcode))
 
                 rv = cursor.fetchall()
@@ -182,6 +182,49 @@ class MySqlCon:
         pass
 
 
+    def search_barcode_moreinfo(self, barcode):
+        data_dict = None
+        try:
+
+            with self.connection.cursor() as cursor:
+                table = 'food'
+                sql = "SELECT * from product_new.food where  bordercode =%s" 
+                cursor.execute(sql, (barcode))
+
+                if(cursor.rowcount == 0):
+                     table = 'clothes'
+                     sql = "SELECT * from product_new.clothes where  bordercode =%s" 
+                     cursor.execute(sql, (barcode))
+                     if(cursor.rowcount == 0):
+                        table = 'prod'
+                        sql = "SELECT * from product_new.prod where  bordercode =%s" 
+                        cursor.execute(sql, (barcode))
+                        if(cursor.rowcount == 0):
+                            print("no barcode")
+                            raise self.DoesNotExist
+                    
+                if cursor.rowcount > 1:
+                    raise self.TooManyObjects
+
+                rv = cursor.fetchall() 
+                for data in rv : 
+               
+                    data_dict = dict(data)
+                    data_dict.update({'table' : table})
+                   #print(data_dict)
+                '''data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                data_json = json.loads(data_json, encoding='UTF-8')
+                for data in data_json:
+                    data_dict = data
+                data_dict.update({'table' : table})'''
+
+
+        except:
+            log.exception('No search')
+            raise self.DoesNotExist
+
+        return data_dict
+
 
 def main():
     try:
@@ -189,6 +232,7 @@ def main():
         #print(con.search_user(email = "a.miron@gmail.com", password = "1"))
         #print(con.search_user_bool("276920834954"))
         print(con.search_barcode('234556549830'))
+        #print(con.search_barcode_moreinfo('234556549830'))
 
     except Exception:
 

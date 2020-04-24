@@ -1,0 +1,9 @@
+[2020-04-19 22:28:16,174][ERROR][logg.search_barcode:88] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 69, in search_barcode
+    cursor.execute(sql, (barcode))
+  File "C:\Users\User\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.8_qbz5n2kfra8p0\LocalCache\local-packages\Python38\site-packages\pymysql\cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "C:\Users\User\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.8_qbz5n2kfra8p0\LocalCache\local-packages\Python38\site-packages\pymysql\cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+TypeError: not enough arguments for format string

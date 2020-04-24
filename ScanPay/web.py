@@ -55,6 +55,16 @@ async def get_user(request):
     data_json = json.dumps(item)
     print(data_json)
     return json_response(item)
+    
+async def get_user_moreinfo(request):
+    post_data = await request.post()
+    try:
+        item = MySqlCon.get_instance().search_barcode_moreinfo(post_data['barcode'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    print(data_json)
+    return json_response(item)
 
 
 async def auth_middleware(app, handler):
@@ -93,6 +103,7 @@ if __name__ == "__main__":
 log=logg.setup_logging('Server')
 app = web.Application(middlewares=[auth_middleware])
 app.router.add_route('POST', '/barcode', get_user)
+app.router.add_route('POST', '/barcodeall',get_user_moreinfo)
 app.router.add_route('POST', '/login', login)
 web.run_app(app, port=3000)
 
