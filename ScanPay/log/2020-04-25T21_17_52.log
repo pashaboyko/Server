@@ -1,0 +1,5 @@
+[2020-04-26 00:17:52,545][ERROR][logg.product_info:233] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 226, in product_info
+    for data in data_json:
+UnboundLocalError: local variable 'data_json' referenced before assignment

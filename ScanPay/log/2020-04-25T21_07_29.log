@@ -1,0 +1,12 @@
+[2020-04-26 00:07:29,439][ERROR][logg.product_info:232] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 226, in product_info
+    dict_as_list = dict_as_list.append(data.items())
+UnboundLocalError: local variable 'dict_as_list' referenced before assignment
+[2020-04-26 00:07:29,441][ERROR][logg.main:246] Error connect to Mysql   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 242, in main
+    print(con.product_info('733749933993'))
+  File "mysqlCon.py", line 233, in product_info
+    return dict_as_list
+UnboundLocalError: local variable 'dict_as_list' referenced before assignment
