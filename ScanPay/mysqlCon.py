@@ -183,7 +183,7 @@ class MySqlCon:
         try:
 
             with self.connection.cursor() as cursor:
-                sql = "SELECT * from product_new1.product_value where  bordercode =%s"
+                sql = "SELECT id_product_value, product_value.name,bordercode,price,photo,points, product_category.name as 'category' ,product_subcategory.name as 'subcategory' , product_manufacturer.name as 'manufacturer' ,delivery_date,quantity from product_new1.product_value , product_new1.product_category, product_new1.product_subcategory ,product_new1.product_manufacturer where product_value.id_category=product_category.id_category And product_value.id_manufacturer = product_manufacturer.id_manufacturer and product_value.id_subcategory = product_subcategory.id_subcategory and  product_value.bordercode =%s"
                 cursor.execute(sql, (barcode))
 
                 rv = cursor.fetchall()
