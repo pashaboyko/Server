@@ -1,0 +1,5 @@
+[2020-04-19 21:33:53,709][ERROR][logg.search_barcode:95] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 85, in search_barcode
+    raise self.DoesNotExist
+MySqlCon.DoesNotExist

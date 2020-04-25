@@ -10,7 +10,7 @@ HOST = '127.0.0.1'
 PORT = 3306
 USER = 'root'
 PASSWORD = 'lock172839465'
-DB = 'product_new'
+DB = 'product_new1'
 CHARSET = 'utf8mb4'
 CURSORCLASS = pymysql.cursors.DictCursor
 '''
@@ -19,7 +19,7 @@ HOST = '127.0.0.1'
 PORT = 3305
 USER = 'root'
 PASSWORD = '12345678'
-DB = 'product_new'
+DB = 'product_new1'
 CHARSET = 'utf8mb4'
 CURSORCLASS = pymysql.cursors.DictCursor
 
@@ -60,13 +60,8 @@ class MySqlCon:
         try:
 
             with self.connection.cursor() as cursor:
-                
-                       
-                    
-
-
-                sql = "SELECT name,bordercode,price,points  from product_new.food where  bordercode =%s union SELECT name,bordercode,price,points from product_new.clothes where  bordercode =%s  union  SELECT name,bordercode,price,points from product_new.prod where  bordercode =%s"
-                cursor.execute(sql, (barcode,barcode,barcode))
+                sql = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
+                cursor.execute(sql, (barcode))
 
                 rv = cursor.fetchall()
 
@@ -96,7 +91,7 @@ class MySqlCon:
 
             with self.connection.cursor() as cursor:
 
-                sql = "SELECT * FROM product_new.user WHERE email=%s AND password=%s"
+                sql = "SELECT * FROM product_new1.user WHERE email=%s AND password=%s"
                 cursor.execute(sql, (email, password))
 
                 rv = cursor.fetchall()
@@ -127,7 +122,7 @@ class MySqlCon:
 
             with self.connection.cursor() as cursor:
 
-                sql = "SELECT * FROM product_new.user WHERE barcode_user=%s"
+                sql = "SELECT * FROM product_new1.user WHERE bordercode=%s"
                 cursor.execute(sql, (barcode))
 
                 rv = cursor.fetchall()
@@ -139,19 +134,20 @@ class MySqlCon:
             log.exception('No search')
             return False
 
-    def add_row_to_items(self,name,barcode, price, photo, day, month, year):
+    def add_row_to_items(self,id_product_value,name,barcode,price, photo, id_category, id_subcategory, id_manufacturer, points, delivery_date, quantity):
         try:
             cursor = self.connection.cursor()
             print("Enter name: ")
             Name = input()
             print("Enter bordercode: ")
             Barr = input()
-            sql = "Insert into product_new.food(name, bordercode, price, photo, day, month, year) " \
-                  + " values (%s, %s, %s, %s, %s, %s, %s) "
+            
+            sql = "Insert into product_new1.product_value(id_product_value, name, bordercode, price,id_category,id_subcategory, id_manufacturer, photo, points, delivery_date, quantity) " \
+                  + " values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
 
-            cursor.execute(sql, (name,barcode, price, photo, day, month, year))
+            cursor.execute(sql, (id_product_value,name,barcode, price, id_category, id_subcategory, id_manufacturer, photo, points, delivery_date, quantity))
 
-            sql1 = "SELECT * FROM product_new.food"
+            sql1 = "SELECT * FROM product_new1.product_value"
             cursor.execute(sql1)
             for row in cursor:
                 print(row)
@@ -164,10 +160,10 @@ class MySqlCon:
     def delete_row(self, barcode):
         try:
             cursor = self.connection.cursor()
-            sql = "Delete from  product_new.food where bordercode = %s"
+            sql = "Delete from  product_new1.product_value where bordercode = %s"
             rowCount = cursor.execute(sql, (barcode))
             print("Deleted! ", rowCount, " rows")
-            sql1 = "SELECT * FROM product_new.food"
+            sql1 = "SELECT * FROM product_new1.product_value"
             cursor.execute(sql1)
             for row in cursor:
                 print(row)
@@ -182,13 +178,43 @@ class MySqlCon:
         pass
 
 
+    def search_barcode_moreinfo(self, barcode):
+        data_dict = None
+        try:
+
+            with self.connection.cursor() as cursor:
+                sql = "SELECT * from product_new1.product_value where  bordercode =%s"
+                cursor.execute(sql, (barcode))
+
+                rv = cursor.fetchall()
+
+                if cursor.rowcount > 1:
+                    print("545")
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
+                   # print(data)
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
+
+        except:
+            log.exception('No search')
+
+        return data_dict
+
 
 def main():
     try:
         con = MySqlCon.get_instance()
         #print(con.search_user(email = "a.miron@gmail.com", password = "1"))
         #print(con.search_user_bool("276920834954"))
-        print(con.search_barcode('234556549830'))
+        #print(con.search_barcode('644832819197'))
+        print(con.search_barcode_moreinfo('644832819197'))
 
     except Exception:
 
