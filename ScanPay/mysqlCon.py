@@ -207,6 +207,30 @@ class MySqlCon:
 
         return data_dict
 
+    def product_info(self, barcode):
+        data_dict = {}
+        try:
+
+            with self.connection.cursor() as cursor:
+                sql = "SELECT  product_features.name as 'feature', product_features_value.value from product_new1.product_features_value, product_new1.product_features, product_new1.product_value where product_features_value.id_feature = product_features.id_feature and product_features_value.id_product = product_value.id_product_value and product_value.bordercode = %s"
+                cursor.execute(sql, (barcode))
+                rv = cursor.fetchall()
+                if cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict.update({data.get("feature") : data.get("value")})
+                   
+                   # print(data)
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
+
+        except:
+            log.exception('No search')
+        return data_dict
 
 def main():
     try:
@@ -214,7 +238,8 @@ def main():
         #print(con.search_user(email = "a.miron@gmail.com", password = "1"))
         #print(con.search_user_bool("276920834954"))
         #print(con.search_barcode('644832819197'))
-        print(con.search_barcode_moreinfo('644832819197'))
+        #print(con.search_barcode_moreinfo('644832819197'))
+        print(con.product_info('733749933993'))
 
     except Exception:
 
