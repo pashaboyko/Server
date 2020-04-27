@@ -44,6 +44,21 @@ async def login(request):
     jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
     print(jwt_token)
     return json_response({'status': 'ok', 'message': jwt_token.decode('utf-8')})
+    
+async def entering(request):
+    post_data = await request.post()
+    print(post_data)
+
+    try:
+        print(MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']))
+        admin = MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']) 
+        response = {'status': 'ok', 'message': 'Enter successful'}
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
+    #data_json = json.dumps(admin)
+    #print(data_json)
+    #return json_response(admin)
+    return json_response(response)
 
 
 async def get_user(request):
@@ -117,6 +132,7 @@ app.router.add_route('POST', '/barcodeall',get_user_moreinfo)
 app.router.add_route('POST', '/login', login)
 app.router.add_route('POST', '/info', get_info)
 #app.router.add_route('GET', '/barcodeall', get_user_moreinfo)
+app.router.add_route('POST', '/entering', entering)
 web.run_app(app, port=3000)
 
 

@@ -114,7 +114,41 @@ class MySqlCon:
             log.exception('No search')
 
         return data_dict
+    
+    def search_admin(self,barcode,password) :
+        data_dict = None
+        try:
 
+            with self.connection.cursor() as cursor:
+
+                sql = "SELECT * FROM product_new1.admin WHERE bordercode=%s AND password=%s"
+                cursor.execute(sql, (barcode, password))
+
+                rv = cursor.fetchall()
+
+
+
+                if cursor.rowcount > 1:
+                    #print("545")
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                        sql = "SELECT * FROM product_new1.admin WHERE bordercode=%s"
+                        cursor.execute(sql, barcode)
+                        if cursor.rowcount != 0:
+                            raise self.NotCorrectPassword
+                        else:
+                        #print("34")
+                            raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
+
+        except:
+            log.exception('No search')
+
+        return data_dict
 
 
     def search_user_bool(self,barcode) -> bool:
@@ -239,7 +273,8 @@ def main():
         #print(con.search_user_bool("276920834954"))
         #print(con.search_barcode('644832819197'))
         #print(con.search_barcode_moreinfo('644832819197'))
-        print(con.product_info('733749933993'))
+        #print(con.product_info('733749933993'))
+        print(con.search_admin(barcode = "855555555555", password = "secret1"))
 
     except Exception:
 
