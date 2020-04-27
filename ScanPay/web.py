@@ -52,7 +52,7 @@ async def entering(request):
     try:
         print(MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']))
         admin = MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']) 
-        response = {'status': 'ok', 'message': 'Enter successful'}
+        response = {'status': '200', 'message': 'Enter successful'}
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
     #data_json = json.dumps(admin)

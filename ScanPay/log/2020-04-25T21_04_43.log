@@ -1,0 +1,5 @@
+[2020-04-26 00:04:43,728][ERROR][logg.product_info:184] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 178, in product_info
+    data_dict.append({data.get("feature") : data.get("value")})
+AttributeError: 'NoneType' object has no attribute 'append'
