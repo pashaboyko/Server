@@ -259,19 +259,20 @@ class MySqlCon:
     
     def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, points, delivery_date, quantity):
         try:
-            with cursor = self.connection.cursor() as cursor:
+            with self.connection.cursor() as cursor:
                 sql0 = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
                 cursor.execute(sql0, (barcode))
 
                 rv = cursor.fetchall()
-                elif cursor.rowcount != 0:
+                if cursor.rowcount > 0:
                     #print("34")
                     raise self.DoesNotExist
                 sql = "Insert into product_new1.product_value(name, bordercode, price,id_subcategory, id_manufacturer, points, delivery_date, quantity) values (%s, %s, %s,  %s , %s, %s, %s, %s) "
 
                 cursor.execute(sql, (name,barcode, price, id_subcategory, id_manufacturer,  points, delivery_date, quantity))
+                self.connection.commit()
 
-                sql1 = "SELECT * FROM product_new1.product_value where bordercode = %s"
+                '''sql1 = "SELECT * FROM product_new1.product_value where bordercode = %s"
                 cursor.execute(sql1, (barcode))
                 rv = cursor.fetchall()
                 if cursor.rowcount > 1:
@@ -286,12 +287,45 @@ class MySqlCon:
                     for data in data_json:
                         data_dict = data
                    # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))'''
 
         except:
             log.exception('No search')
 
-        return data_dict
+        return "added"
+
+    def add_features_value(self, value, id_feature, barcode):
+        try:
+            with self.connection.cursor() as cursor:
+            
+                
+               
+                sql = "Insert into product_new1.product_features_value(value, id_feature, id_product) values (%s, %s, (SELECT product_value.id_product_value from product_new1.product_value where product_value.bordercode = %s)) "
+
+                cursor.execute(sql, (value,id_feature, barcode))
+                self.connection.commit()
+
+                '''sql1 = "SELECT * FROM product_new1.product_value where bordercode = %s"
+                cursor.execute(sql1, (barcode))
+                rv = cursor.fetchall()
+                if cursor.rowcount > 1:
+                    print("545")
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
+                   # print(data)
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))'''
+
+        except:
+            log.exception('No search')
+
+        return "ok"
             
     def search_barcode_moreinfo(self, barcode):
         data_dict = None
@@ -356,7 +390,9 @@ def main():
         #print(con.product_info('733749933993'))
         #print(con.search_admin(barcode = "855555555555", password = "secret1"))
         #print(con.relative_subcategory("одежда"))
-        print(con.manufacturer_list("одежда"))
+        #print(con.manufacturer_list("одежда"))
+        #print(con.add_row_to_products('ddddd','83838833838',40.0,10,14, 3, '11.03.2020', 20))
+        #print(con.add_features_value('1',1,'83838833838'))
 
     except Exception:
 
