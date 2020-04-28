@@ -392,8 +392,8 @@ def main():
         #print(con.search_admin(barcode = "855555555555", password = "secret1"))
         #print(con.relative_subcategory("одежда"))
         #print(con.manufacturer_list("одежда"))
-        print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
-        #print(con.add_features_value('1',1,'83838833838'))
+        #print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
+        print(con.add_features_value('1',1,'838388338382'))
 
     except Exception:
 
