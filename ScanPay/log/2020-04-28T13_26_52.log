@@ -1,0 +1,5 @@
+[2020-04-28 16:26:52,109][ERROR][logg.main:306] Error connect to Mysql   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 302, in main
+    print(con.relative_category("одежда"))
+AttributeError: 'MySqlCon' object has no attribute 'relative_category'
