@@ -111,15 +111,21 @@ async def manufacturer(request):
     print(data_json)
     return json_response(item)
 
+async def checkbarcode(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().product_info(post_data['barcode'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Barcode is new'}, status=200)
+
 async def add(request):
     post_data = await request.post()
     try:
-        item = MySqlCon.get_instance().add_row_to_products(post_data['name'],post_data['barcode'],post_data['price'],post_data['id_subcategory'],post_data['id_manufacturer'],post_data['points'], post_data['delivery_date'], post_data['quantity'])
+        MySqlCon.get_instance().add_row_to_products(post_data['name'],post_data['barcode'],post_data['price'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['delivery_date'], post_data['quantity'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    data_json = json.dumps(item)
-    print(data_json)
-    return json_response(item)
+    return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
 async def add_features(request):
     post_data = await request.post()
@@ -176,6 +182,7 @@ app.router.add_route('POST', '/category', subcategory)
 app.router.add_route('POST', '/manufacturer', manufacturer)
 app.router.add_route('POST', '/add', add)
 app.router.add_route('POST', '/add_features', add_features)
+app.router.add_route('POST', '/checkbarcode', checkbarcode)
 web.run_app(app, port=3000)
 
 

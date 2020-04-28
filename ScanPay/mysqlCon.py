@@ -83,7 +83,7 @@ class MySqlCon:
             log.exception('No search')
 
         return data_dict
-
+      
 
     def search_user(self,email,password) :
         data_dict = None
@@ -257,19 +257,22 @@ class MySqlCon:
             log.exception('No search')
         return data_dict
     
-    def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, points, delivery_date, quantity):
+    def checkbarcode(self,barcode):
+        with self.connection.cursor() as cursor:
+            sql0 = "SELECT *  from product_new1.product_value where  bordercode =%s"
+            cursor.execute(sql0, (barcode))
+            rv = cursor.fetchall()
+            if cursor.rowcount > 0:
+                    #print("34")
+                raise self.DoesNotExist
+    
+    def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, delivery_date, quantity):
         try:
             with self.connection.cursor() as cursor:
-                sql0 = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
-                cursor.execute(sql0, (barcode))
+                MySqlCon.get_instance().checkbarcode(barcode)
+                sql = "Insert into product_new1.product_value(name, bordercode, price,id_subcategory, id_manufacturer, delivery_date, quantity) values (%s, %s, %s, %s, %s, %s, %s) "
 
-                rv = cursor.fetchall()
-                if cursor.rowcount > 0:
-                    #print("34")
-                    raise self.DoesNotExist
-                sql = "Insert into product_new1.product_value(name, bordercode, price,id_subcategory, id_manufacturer, points, delivery_date, quantity) values (%s, %s, %s,  %s , %s, %s, %s, %s) "
-
-                cursor.execute(sql, (name,barcode, price, id_subcategory, id_manufacturer,  points, delivery_date, quantity))
+                cursor.execute(sql, (name,barcode, price, id_subcategory, id_manufacturer, delivery_date, quantity))
                 self.connection.commit()
 
                 '''sql1 = "SELECT * FROM product_new1.product_value where bordercode = %s"
@@ -291,8 +294,7 @@ class MySqlCon:
 
         except:
             log.exception('No search')
-
-        return "added"
+        return "ok"
 
     def add_features_value(self, value, id_feature, barcode):
         try:
@@ -324,8 +326,7 @@ class MySqlCon:
 
         except:
             log.exception('No search')
-
-        return "ok"
+        return "added"
             
     def search_barcode_moreinfo(self, barcode):
         data_dict = None
@@ -391,7 +392,7 @@ def main():
         #print(con.search_admin(barcode = "855555555555", password = "secret1"))
         #print(con.relative_subcategory("одежда"))
         #print(con.manufacturer_list("одежда"))
-        #print(con.add_row_to_products('ddddd','83838833838',40.0,10,14, 3, '11.03.2020', 20))
+        print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
         #print(con.add_features_value('1',1,'83838833838'))
 
     except Exception:
