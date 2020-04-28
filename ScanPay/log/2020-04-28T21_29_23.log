@@ -1,0 +1,5 @@
+[2020-04-29 00:29:23,230][ERROR][logg.add_row_to_products:296] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 272, in add_row_to_products
+    checkbarcode(barcode)
+NameError: name 'checkbarcode' is not defined
