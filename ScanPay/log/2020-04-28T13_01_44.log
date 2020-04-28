@@ -1,0 +1,5 @@
+[2020-04-28 16:01:44,459][ERROR][logg.relative_category:235] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 218, in relative_category
+    cursor.execute(sql, (barcode))
+NameError: name 'barcode' is not defined

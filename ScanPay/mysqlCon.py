@@ -211,11 +211,34 @@ class MySqlCon:
     class TooManyObjects(BaseException):
         pass
 
+    def relative_subcategory(self, category):
+        data_dict = {}
+        try:
+             with self.connection.cursor() as cursor:
+                sql = "SELECT product_subcategory.id_subcategory, product_subcategory.name from product_new1.product_category,product_new1.product_subcategory where product_category.name = %s and product_subcategory.id_category=product_category.id_category"
+                cursor.execute(sql, (category))
+                rv = cursor.fetchall()
+                
+                if cursor.rowcount == 0:
+                    print("34")
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict.update({data.get("id_subcategory") : data.get("name")})
+                   # print(data)
+                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
 
+        except:
+            log.exception('No search')
+        return data_dict
+    
+    
+            
     def search_barcode_moreinfo(self, barcode):
         data_dict = None
         try:
-
             with self.connection.cursor() as cursor:
                 sql = "SELECT id_product_value, product_value.name,bordercode,price,photo,points, product_category.name as 'category' ,product_subcategory.name as 'subcategory' , product_manufacturer.name as 'manufacturer' ,delivery_date,quantity from product_new1.product_value , product_new1.product_category, product_new1.product_subcategory ,product_new1.product_manufacturer where product_value.id_category=product_category.id_category And product_value.id_manufacturer = product_manufacturer.id_manufacturer and product_value.id_subcategory = product_subcategory.id_subcategory and  product_value.bordercode =%s"
                 cursor.execute(sql, (barcode))
@@ -274,7 +297,8 @@ def main():
         #print(con.search_barcode('644832819197'))
         #print(con.search_barcode_moreinfo('644832819197'))
         #print(con.product_info('733749933993'))
-        print(con.search_admin(barcode = "855555555555", password = "secret1"))
+        #print(con.search_admin(barcode = "855555555555", password = "secret1"))
+        print(con.relative_subcategory("одежда"))
 
     except Exception:
 
