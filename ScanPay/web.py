@@ -63,6 +63,8 @@ async def entering(request):
 async def get_user(request):
     post_data = await request.post()
     try:
+        print(post_data['barcode'])
+        print("sdnckdncjkdsncjn")
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
@@ -102,11 +104,12 @@ async def auth_middleware(app, handler):
             try:
                 payload = jwt.decode(jwt_token, JWT_SECRET,
                                      algorithms=[JWT_ALGORITHM])
+                print (payload)
             except (jwt.DecodeError, jwt.ExpiredSignatureError):
                 return json_response({'status' : 'error', 'message': 'Token is invalid'},
                                      status=400)
+            print (23432432)
 
-            request.user = User.objects.get(id=payload['user_id'])
         return await handler(request)
 
     return middleware
