@@ -1,0 +1,5 @@
+[2020-04-28 21:10:37,740][ERROR][logg.add_row_to_products:293] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 273, in add_row_to_products
+    con.commit()
+NameError: name 'con' is not defined
