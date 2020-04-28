@@ -100,6 +100,25 @@ async def subcategory(request):
     print(data_json)
     return json_response(item)
 
+async def manufacturer(request):
+    post_data = await request.post()
+    try:
+        item = MySqlCon.get_instance().manufacturer_list(post_data['category'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    print(data_json)
+    return json_response(item)
+
+async def add(request):
+    post_data = await request.post()
+    try:
+        item = MySqlCon.get_instance().add_row_to_products(post_data['name'],post_data['barcode'],post_data['price'],post_data['id_subcategory'],post_data['id_manufacturer'],post_data['points'], post_data['delivery_date'], post_data['quantity'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    print(data_json)
+    return json_response(item)
 
 async def auth_middleware(app, handler):
     async def middleware(request):
@@ -143,6 +162,8 @@ app.router.add_route('POST', '/info', get_info)
 #app.router.add_route('GET', '/barcodeall', get_user_moreinfo)
 app.router.add_route('POST', '/entering', entering)
 app.router.add_route('POST', '/category', subcategory)
+app.router.add_route('POST', '/manufacturer', manufacturer)
+app.router.add_route('POST', '/add', add)
 web.run_app(app, port=3000)
 
 
