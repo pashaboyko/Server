@@ -442,10 +442,9 @@ class MySqlCon:
     def delete(self, barcode):
         try:
             with self.connection.cursor() as cursor:
-            #MySqlCon.get_instance().checkbarcode_true(barcode)
-            sql = "Delete from  product_new1.product_value where bordercode = %s"
-            cursor.execute(sql, (barcode))
-            self.connection.commit()
+                sql = "Delete from  product_new1.product_value where bordercode = %s"
+                cursor.execute(sql, (barcode))
+                self.connection.commit()
         except:
             log.exception('No search')
         return "ok"
