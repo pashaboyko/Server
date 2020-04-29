@@ -20,11 +20,6 @@ def json_response(body='', **kwargs):
     print(kwargs)
     return web.Response(**kwargs)
 
-def jsons_response(jsons, **kwargs):
-    kwargs['body'] = jsons
-    kwargs['content_type'] = 'application/json'
-    print(kwargs)
-    return web.Response(**kwargs)
 
 
 async def login(request):
@@ -63,6 +58,8 @@ async def entering(request):
 async def get_user(request):
     post_data = await request.post()
     try:
+        print(post_data['barcode'])
+        print("sdnckdncjkdsncjn")
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
@@ -106,15 +103,14 @@ async def manufacturer(request):
         item = MySqlCon.get_instance().manufacturer_list(post_data['category'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    data_json = json.dumps(item)
-    print(data_json)
     return json_response(item)
 
 async def checkbarcode(request):
     post_data = await request.post()
     try:
-        MySqlCon.get_instance().product_info(post_data['barcode'])
+        MySqlCon.get_instance().checkbarcode(post_data['barcode'])
     except Exception:
+        print("njenvjkberjbv")
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Barcode is new'}, status=200)
 
@@ -128,11 +124,33 @@ async def add(request):
 
 async def add_features(request):
     post_data = await request.post()
+    print(post_data['value'], post_data['id_feature'],post_data['barcode'])
     try:
         MySqlCon.get_instance().add_features_value( post_data['value'], post_data['id_feature'],post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
+
+
+async def get_rowcount(request):
+    try:
+        row = MySqlCon.get_instance().rowcount()
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response(row)
+
+async def listProductlimit(request):
+    post_data = await request.post()
+    print(post_data['startLimit'],post_data['limit'])
+    print("233232212112")
+    try:
+        item = MySqlCon.get_instance().listProduct(post_data['startLimit'],post_data['limit'])
+        print(item)
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response(item)
+
+
 
 async def auth_middleware(app, handler):
     async def middleware(request):
@@ -145,11 +163,12 @@ async def auth_middleware(app, handler):
             try:
                 payload = jwt.decode(jwt_token, JWT_SECRET,
                                      algorithms=[JWT_ALGORITHM])
+                print (payload)
             except (jwt.DecodeError, jwt.ExpiredSignatureError):
                 return json_response({'status' : 'error', 'message': 'Token is invalid'},
                                      status=400)
+            print (23432432)
 
-            request.user = User.objects.get(id=payload['user_id'])
         return await handler(request)
 
     return middleware
@@ -175,11 +194,13 @@ app.router.add_route('POST', '/login', login)
 app.router.add_route('POST', '/info', get_info)
 #app.router.add_route('GET', '/barcodeall', get_user_moreinfo)
 app.router.add_route('POST', '/entering', entering)
+app.router.add_route('POST', '/listProductlimit', listProductlimit)
 app.router.add_route('POST', '/category', subcategory)
 app.router.add_route('POST', '/manufacturer', manufacturer)
 app.router.add_route('POST', '/add', add)
 app.router.add_route('POST', '/add_features', add_features)
 app.router.add_route('POST', '/checkbarcode', checkbarcode)
+app.router.add_route('GET', '/rowcount', get_rowcount)
 web.run_app(app, port=3000)
 
 

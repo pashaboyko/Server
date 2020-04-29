@@ -218,7 +218,7 @@ class MySqlCon:
                 sql = "SELECT product_subcategory.id_subcategory, product_subcategory.name from product_new1.product_category,product_new1.product_subcategory where product_category.name = %s and product_subcategory.id_category=product_category.id_category"
                 cursor.execute(sql, (category))
                 rv = cursor.fetchall()
-                
+
                 if cursor.rowcount == 0:
                     print("34")
                     raise self.DoesNotExist
@@ -258,14 +258,61 @@ class MySqlCon:
         return data_dict
     
     def checkbarcode(self,barcode):
-        with self.connection.cursor() as cursor:
-            sql0 = "SELECT *  from product_new1.product_value where  bordercode =%s"
-            cursor.execute(sql0, (barcode))
-            rv = cursor.fetchall()
-            if cursor.rowcount > 0:
-                    #print("34")
-                raise self.DoesNotExist
+        try:
+            with self.connection.cursor() as cursor:
+                sql0 = "SELECT *  from product_new1.product_value where  bordercode =%s"
+                cursor.execute(sql0, (barcode))
+                rv = cursor.fetchall()
+                if cursor.rowcount > 0:
+                    raise self.DoesNotExist
+        except:
+            log.exception('has barcode')
+            raise Exception("has barcode")
+
+
+    def rowcount(self):
+        try:
+            with self.connection.cursor() as cursor:
+                sql0 = "SELECT *  from product_new1.product_value"
+                cursor.execute(sql0)
+                rv = cursor.fetchall()
+                if cursor.rowcount == 0:
+                    raise self.DoesNotExist
+                return {'rowcount' : str(cursor.rowcount)}    
+        except:
+            log.exception('no row')
+            raise Exception("no row")
+
+
+    def listProduct(self, startLimit : int, countProduct : int):
+        try:
+            data_dict = {}
+            print ("sdncjksnadckjnkadsjcnksdanjkcnkjsdancjknds")
+            print(startLimit)
+            print(countProduct)
+            with self.connection.cursor() as cursor:
+                print ("sdncjksnadckjnkadsjcnksdanjkcnkjsdancjknds")
+
+                sql0 = "SELECT id_product_value, product_value.name,bordercode,price,photo,points, product_category.name as 'category' ,product_subcategory.name as 'subcategory' , product_manufacturer.name as 'manufacturer' ,delivery_date,quantity from product_new1.product_value , product_new1.product_category, product_new1.product_subcategory ,product_new1.product_manufacturer where product_value.id_category=product_category.id_category And product_value.id_manufacturer = product_manufacturer.id_manufacturer and product_value.id_subcategory = product_subcategory.id_subcategory limit %s,%s "
+                cursor.execute(sql0, (int(startLimit),int(countProduct)))
+                rv = cursor.fetchall()
     
+                if cursor.rowcount == 0:
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        print(data)
+                        data_dict.update({data.get("id_product_value") : data})
+                    print (data_dict)    
+        except:
+            log.exception('no row')
+            raise Exception("no row") 
+
+        return data_dict           
+        
+
     def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, delivery_date, quantity):
         try:
             with self.connection.cursor() as cursor:
@@ -393,7 +440,8 @@ def main():
         #print(con.relative_subcategory("одежда"))
         #print(con.manufacturer_list("одежда"))
         #print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
-        print(con.add_features_value('1',1,'838388338382'))
+        #print(con.add_features_value('0','1','838388338382'))
+        print(con.listProduct('0','8'))
 
     except Exception:
 
