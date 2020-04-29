@@ -62,9 +62,7 @@ class MySqlCon:
             with self.connection.cursor() as cursor:
                 sql = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
                 cursor.execute(sql, (barcode))
-
                 rv = cursor.fetchall()
-
                 if cursor.rowcount > 1:
                     print("545")
                     raise self.TooManyObjects
