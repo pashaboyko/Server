@@ -1,5 +1,0 @@
-[2020-04-25 23:40:44,012][ERROR][logg.main:250] Error connect to Mysql   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 246, in main
-    print(con.product_info('733749933993'))
-AttributeError: 'MySqlCon' object has no attribute 'product_info'

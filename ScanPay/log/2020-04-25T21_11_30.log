@@ -1,5 +1,0 @@
-[2020-04-26 00:11:30,651][ERROR][logg.product_info:234] No search   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 228, in product_info
-    data_dict.update({data.get("feature") : data.get("value")})
-AttributeError: 'NoneType' object has no attribute 'update'

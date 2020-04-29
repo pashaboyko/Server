@@ -1,7 +1,0 @@
-[2020-04-26 17:46:35,782][ERROR][logg.main:124] Error connect to Mysql   ()
-Traceback (most recent call last):
-  File "hash_1.py", line 120, in main
-    con.registration_user()
-  File "hash_1.py", line 76, in registration_user
-    barcode = random.randint(100000000000,999999999999)
-NameError: name 'random' is not defined

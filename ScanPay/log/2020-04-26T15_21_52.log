@@ -1,7 +1,0 @@
-[2020-04-26 18:21:58,047][ERROR][logg.main:125] Error connect to Mysql   ()
-Traceback (most recent call last):
-  File "hash_1.py", line 121, in main
-    con.registration_user()
-  File "hash_1.py", line 83, in registration_user
-    salt = salt,
-NameError: name 'salt' is not defined

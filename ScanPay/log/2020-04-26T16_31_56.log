@@ -1,7 +1,0 @@
-[2020-04-26 19:32:01,984][ERROR][logg.main:128] Error connect to Mysql   ()
-Traceback (most recent call last):
-  File "hash_1.py", line 124, in main
-    con.registration_user()
-  File "hash_1.py", line 81, in registration_user
-    password=bytes(password, 'utf8mb4'),
-LookupError: unknown encoding: utf8mb4

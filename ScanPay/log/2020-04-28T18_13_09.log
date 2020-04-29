@@ -1,5 +1,0 @@
-[2020-04-28 21:13:09,135][ERROR][logg.add_row_to_products:293] No search   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 269, in add_row_to_products
-    raise self.DoesNotExist
-MySqlCon.DoesNotExist

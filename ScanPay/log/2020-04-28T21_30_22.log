@@ -1,5 +1,0 @@
-[2020-04-29 00:30:22,895][ERROR][logg.add_row_to_products:296] No search   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 272, in add_row_to_products
-    MySqlCon.get_instance().checkbarcode(barcode)
-TypeError: checkbarcode() takes 1 positional argument but 2 were given

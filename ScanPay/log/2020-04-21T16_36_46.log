@@ -1,5 +1,0 @@
-[2020-04-21 19:36:46,581][ERROR][logg.search_barcode_moreinfo:224] No search   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 195, in search_barcode_moreinfo
-    cursor.execute(sql1, (barcode))
-NameError: name 'sql1' is not defined

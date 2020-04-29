@@ -1,5 +1,0 @@
-[2020-04-29 00:27:49,152][ERROR][logg.main:402] Error connect to Mysql   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 397, in main
-    print(con.add_row_to_products('ddddd','83838833838',40.0,10,14, 3, '11.03.2020', 20))
-TypeError: add_row_to_products() takes 8 positional arguments but 9 were given

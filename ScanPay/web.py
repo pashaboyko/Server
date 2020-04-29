@@ -156,11 +156,12 @@ async def edit_features(request):
     
 async def delete(request):
     post_data = await request.post()
+    print(post_data['barcode'])
     try:
-        MySqlCon.get_instance().add_row_to_products(post_data['barcode'])
+        MySqlCon.get_instance().delete(post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
+    return json_response({'status' : 'ok', 'message': 'Deleted'}, status=200)
 
 
 async def get_rowcount(request):

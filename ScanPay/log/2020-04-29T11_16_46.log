@@ -1,5 +1,0 @@
-[2020-04-29 14:16:46,763][ERROR][logg.rowcount:285] no row   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 278, in rowcount
-    cursor.execute(sql0, (barcode))
-NameError: name 'barcode' is not defined

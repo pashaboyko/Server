@@ -1,5 +1,0 @@
-[2020-04-29 14:15:39,159][ERROR][logg.rowcount:285] has barcode   ()
-Traceback (most recent call last):
-  File "mysqlCon.py", line 278, in rowcount
-    cursor.execute(sql0, (barcode))
-NameError: name 'barcode' is not defined

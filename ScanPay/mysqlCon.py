@@ -31,9 +31,6 @@ class MySqlCon:
 
     _instance = None
 
-
-
-
     @staticmethod
     def get_instance(host=HOST,
                      port=PORT,
@@ -441,6 +438,7 @@ class MySqlCon:
 
     def delete(self, barcode):
         try:
+            print(barcode)
             with self.connection.cursor() as cursor:
                 sql = "Delete from  product_new1.product_value where bordercode = %s"
                 cursor.execute(sql, (barcode))
@@ -486,7 +484,8 @@ def main():
         #print(con.manufacturer_list("одежда"))
         #print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
         #print(con.add_features_value('0','1','838388338382'))
-        print(con.listProduct('0','8'))
+        #print(con.listProduct('0','8'))
+        con.delete('5645')
 
     except Exception:
 
