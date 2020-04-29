@@ -428,6 +428,52 @@ class MySqlCon:
             log.exception('No search')
         return data_dict
 
+    def checkbarcode_true(self,barcode):
+        with self.connection.cursor() as cursor:
+            sql0 = "SELECT *  from product_new1.product_value where  bordercode =%s"
+            cursor.execute(sql0, (barcode))
+            rv = cursor.fetchall()
+            if cursor.rowcount == 0:
+                    #print("34")
+                raise self.Error
+            else: 
+                return "ok"
+
+    def delete(self, barcode):
+        try:
+            with self.connection.cursor() as cursor:
+            #MySqlCon.get_instance().checkbarcode_true(barcode)
+            sql = "Delete from  product_new1.product_value where bordercode = %s"
+            cursor.execute(sql, (barcode))
+            self.connection.commit()
+        except:
+            log.exception('No search')
+        return "ok"
+    
+    def edit_products(self,id_product,name,price,id_category,id_subcategory,id_manufacturer, photo, points, delivery_date,quantity):
+        try:
+            with self.connection.cursor() as cursor:
+                
+                sql = "UPDATE product_new1.product_value SET product_value.name = %s, product_value.price = %s, product_value.id_category = %s,product_value.id_subcategory = %s,product_value.id_manufacturer = %s, product_value.photo = %s, product_value.points = %s, product_value.delivery_date = %s,product_value.quantity = %s where product_value.id_product_value = %s"
+
+                cursor.execute(sql, (name,price,id_category,id_subcategory,id_manufacturer, photo, points, delivery_date,quantity, id_product))
+                self.connection.commit()
+        except:
+            log.exception('No search')
+        return "ok"
+
+    def edit_features_value(self, id_feature_value, value, id_feature, id_product):
+        try:
+            with self.connection.cursor() as cursor:
+            
+                sql = "UPDATE product_new1.product_features_value SET product_features_value.value = %s, product_features_value.id_feature = %s, product_features_value.id_product= %s where product_features_value.id_feature_value=%s"
+                cursor.execute(sql, (value,id_feature, id_product,id_feature_value))
+                self.connection.commit()
+
+        except:
+            log.exception('No search')
+        return "added"
+    
 def main():
     try:
         con = MySqlCon.get_instance()

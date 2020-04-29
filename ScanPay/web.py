@@ -114,6 +114,14 @@ async def checkbarcode(request):
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Barcode is new'}, status=200)
 
+'''async def checkbarcode_true(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().checkbarcode_true(post_data['barcode'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Barcode is new'}, status=200)'''
+
 async def add(request):
     post_data = await request.post()
     try:
@@ -122,11 +130,34 @@ async def add(request):
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
+async def edit(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().edit_products(post_data['id_product'],post_data['name'],post_data['price'],post_data['id_category'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['photo'], post_data['points'],post_data['delivery_date'], post_data['quantity'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
+
 async def add_features(request):
     post_data = await request.post()
-    print(post_data['value'], post_data['id_feature'],post_data['barcode'])
     try:
         MySqlCon.get_instance().add_features_value( post_data['value'], post_data['id_feature'],post_data['barcode'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
+
+async def edit_features(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().edit_features_value( post_data['id_feature_value'],post_data['value'], post_data['id_feature'],post_data['id_product'])
+    except Exception:
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
+    
+async def delete(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().add_row_to_products(post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
@@ -201,6 +232,10 @@ app.router.add_route('POST', '/add', add)
 app.router.add_route('POST', '/add_features', add_features)
 app.router.add_route('POST', '/checkbarcode', checkbarcode)
 app.router.add_route('GET', '/rowcount', get_rowcount)
+app.router.add_route('POST', '/edit', edit)
+app.router.add_route('POST', '/delete', delete)
+app.router.add_route('POST', '/edit_features', edit_features)
+#app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
 web.run_app(app, port=3000)
 
 
