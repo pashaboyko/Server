@@ -132,7 +132,9 @@ async def add(request):
 
 async def edit(request):
     post_data = await request.post()
+    print("quantity :" + post_data['quantity'])
     try:
+        print(post_data['id_product'],post_data['name'],post_data['price'],post_data['id_category'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['photo'], post_data['points'],post_data['delivery_date'], post_data['quantity'])
         MySqlCon.get_instance().edit_products(post_data['id_product'],post_data['name'],post_data['price'],post_data['id_category'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['photo'], post_data['points'],post_data['delivery_date'], post_data['quantity'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
@@ -141,15 +143,16 @@ async def edit(request):
 async def add_features(request):
     post_data = await request.post()
     try:
-        MySqlCon.get_instance().add_features_value( post_data['value'], post_data['id_feature'],post_data['barcode'])
+        MySqlCon.get_instance().add_features_value(post_data['value'], post_data['id_feature'],post_data['barcode'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
 async def edit_features(request):
     post_data = await request.post()
+    print(post_data['value'], post_data['id_feature'],post_data['id_product'])
     try:
-        MySqlCon.get_instance().edit_features_value( post_data['id_feature_value'],post_data['value'], post_data['id_feature'],post_data['id_product'])
+        MySqlCon.get_instance().edit_features_value(post_data['value'], post_data['id_feature'],post_data['id_product'])
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)

@@ -459,12 +459,12 @@ class MySqlCon:
             log.exception('No search')
         return "ok"
 
-    def edit_features_value(self, id_feature_value, value, id_feature, id_product):
+    def edit_features_value(self,value, id_feature, id_product):
         try:
             with self.connection.cursor() as cursor:
             
-                sql = "UPDATE product_new1.product_features_value SET product_features_value.value = %s, product_features_value.id_feature = %s, product_features_value.id_product= %s where product_features_value.id_feature_value=%s"
-                cursor.execute(sql, (value,id_feature, id_product,id_feature_value))
+                sql = "UPDATE product_new1.product_features_value SET product_features_value.value = %s where product_features_value.id_product=%s AND product_features_value.id_feature = %s"
+                cursor.execute(sql, (value,id_product,id_feature))
                 self.connection.commit()
 
         except:
@@ -484,8 +484,9 @@ def main():
         #print(con.manufacturer_list("одежда"))
         #print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
         #print(con.add_features_value('0','1','838388338382'))
-        #print(con.listProduct('0','8'))
-        con.delete('5645')
+        #print(con.listProduct('0','10'))
+        con.edit_features_value()
+        #con.delete('5645')
 
     except Exception:
 
