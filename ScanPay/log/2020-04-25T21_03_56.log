@@ -1,0 +1,12 @@
+[2020-04-26 00:03:56,677][ERROR][logg.product_info:234] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 228, in product_info
+    dict_as_list.append(data.items())
+AttributeError: 'dict_items' object has no attribute 'append'
+[2020-04-26 00:03:56,678][ERROR][logg.main:248] Error connect to Mysql   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 244, in main
+    print(con.product_info('733749933993'))
+  File "mysqlCon.py", line 235, in product_info
+    return dictionary
+UnboundLocalError: local variable 'dictionary' referenced before assignment

@@ -1,0 +1,5 @@
+[2020-04-29 19:50:01,160][ERROR][logg.edit_products:328] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 304, in edit_products
+    MySqlCon.get_instance().checkbarcode(barcode)
+NameError: name 'barcode' is not defined

@@ -1,0 +1,7 @@
+[2020-04-29 02:11:37,088][ERROR][logg.main:403] Error connect to Mysql   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 399, in main
+    print(con.checkbarcode('838388338382'))
+  File "mysqlCon.py", line 267, in checkbarcode
+    raise self.DoesNotUnique
+AttributeError: 'MySqlCon' object has no attribute 'DoesNotUnique'

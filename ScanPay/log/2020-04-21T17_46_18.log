@@ -1,0 +1,5 @@
+[2020-04-21 20:46:18,503][ERROR][logg.search_barcode_moreinfo:219] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 190, in search_barcode_moreinfo
+    table = food
+NameError: name 'food' is not defined

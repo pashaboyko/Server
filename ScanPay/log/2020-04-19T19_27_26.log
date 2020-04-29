@@ -1,0 +1,5 @@
+[2020-04-19 22:27:26,793][ERROR][logg.main:195] Error connect to Mysql   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 191, in main
+    print(con.search_barcode('234556549830','234556549830','234556549830'))
+TypeError: search_barcode() takes 2 positional arguments but 4 were given

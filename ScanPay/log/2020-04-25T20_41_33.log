@@ -1,0 +1,5 @@
+[2020-04-25 23:41:33,876][ERROR][logg.product_info:235] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 222, in product_info
+    raise self.TooManyObjects
+MySqlCon.TooManyObjects

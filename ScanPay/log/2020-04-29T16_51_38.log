@@ -1,0 +1,5 @@
+[2020-04-29 19:51:38,747][ERROR][logg.edit_products:328] No search   ()
+Traceback (most recent call last):
+  File "mysqlCon.py", line 307, in edit_products
+    cursor.execute(sql, (name,price,id_category,id_subcategory,id_manufacturer, photo, points, delivery_date,quantity, id_product_value ))
+NameError: name 'id_product_value' is not defined
