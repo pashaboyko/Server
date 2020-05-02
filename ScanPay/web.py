@@ -29,16 +29,24 @@ async def login(request):
     try:
         print(MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
         user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
+        payload = {
+        'user_id': user["bordercode"],
+        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
+        }
+
+        jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
+        MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token)
     except Exception:
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
-    payload = {
+    '''payload = {
         'user_id': user["bordercode"],
         'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
     }
 
     jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
-    print(jwt_token)
-    return json_response({'status': 'ok', 'message': jwt_token.decode('utf-8')})
+    MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token)
+    print(jwt_token)'''
+    return json_response({'status': 'ok', 'message': 'Token added:' + jwt_token.decode('utf-8')})
     
 async def entering(request):
     post_data = await request.post()
@@ -76,6 +84,15 @@ async def get_user_moreinfo(request):
     data_json = json.dumps(item)
     print(data_json)
     return json_response(item)
+    
+async def receipt(request):
+    post_data = await request.post()
+    try:
+        MySqlCon.get_instance().get_receipt(post_data['barcode'],post_data['id_user'],post_data['sum'],post_data['date'])
+    except Exception:
+        #print("njenvjkberjbv")
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
 
 async def get_info(request):
     post_data = await request.post()
@@ -239,6 +256,7 @@ app.router.add_route('GET', '/rowcount', get_rowcount)
 app.router.add_route('POST', '/edit', edit)
 app.router.add_route('POST', '/delete', delete)
 app.router.add_route('POST', '/edit_features', edit_features)
+app.router.add_route('POST', '/receipt', receipt)
 #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
 web.run_app(app, port=3000)
 
