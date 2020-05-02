@@ -2,10 +2,17 @@ import json
 import pymysql.cursors
 import os
 import logg
+import jwt
+from datetime import datetime, timedelta
+
+
+JWT_SECRET = 'secret'
+JWT_ALGORITHM = 'HS256'
+JWT_EXP_DELTA_SECONDS = 20
 
 
 
-
+'''
 HOST = '127.0.0.1'
 PORT = 3306
 USER = 'root'
@@ -22,7 +29,7 @@ PASSWORD = '12345678'
 DB = 'product_new1'
 CHARSET = 'utf8mb4'
 CURSORCLASS = pymysql.cursors.DictCursor
-'''
+
 
 log=None
 
@@ -106,11 +113,23 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict = data
-
+                    
         except:
             log.exception('No search')
 
         return data_dict
+        
+    def write_token(self, email, password, token):
+        try:
+
+            with self.connection.cursor() as cursor:
+                    sql1="UPDATE product_new1.user SET token=%s where user.email=%s AND user.password=%s"
+                    cursor.execute(sql1,(token,email, password))
+                    self.connection.commit()
+        except:
+            log.exception('No search')
+
+        return "ok"
     
     def search_admin(self,barcode,password) :
         data_dict = None
@@ -399,7 +418,37 @@ class MySqlCon:
             log.exception('No search')
 
         return data_dict
-
+    
+    def get_receipt(self, bar, summ, date, id_user):
+        try:
+            with self.connection.cursor() as cursor:
+                
+                x = bar.split()
+                sql1="INSERT INTO product_new1.check_value(id_user, sum, date) values (%s, %s, %s)"   
+                cursor.execute(sql1, (id_user,summ, date))
+                self.connection.commit()
+                sql2 ="SELECT id_check_value from product_new1.check_value where check_value.date = %s"
+                cursor.execute(sql2, (date))
+                rv = cursor.fetchall()
+                if cursor.rowcount > 1:
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
+                for line in x:
+                    sql = "insert into product_new1.check_product_value (id_check_value, barcode) values (%s,%s)"
+                    val = int(line)
+                    print(val)
+                    cursor.execute(sql, (data_dict['id_check_value'],val))
+                    self.connection.commit()
+        except:
+            log.exception('No search')
+        return "ok"
+        
     def product_info(self, barcode):
         data_dict = {}
         try:
@@ -474,7 +523,7 @@ class MySqlCon:
 def main():
     try:
         con = MySqlCon.get_instance()
-        #print(con.search_user(email = "a.miron@gmail.com", password = "1"))
+        #print(con.search_user("re@gmail.com", "secret1"))
         #print(con.search_user_bool("276920834954"))
         #print(con.search_barcode('644832819197'))
         #print(con.search_barcode_moreinfo('644832819197'))
@@ -485,9 +534,10 @@ def main():
         #print(con.add_row_to_products('ddddd','838388338389',40.0,10,14, '11.03.2020', 20))
         #print(con.add_features_value('0','1','838388338382'))
         #print(con.listProduct('0','10'))
-        con.edit_features_value()
+        #con.edit_features_value()
         #con.delete('5645')
-
+        #print(con.get_receipt('644832819197 438233939273 437628788237', 5000, '15.05.2020 13:07:23'))
+        print(con.write_token("re@gmail.com", "secret1","1234567"))
     except Exception:
 
         log.exception('Error connect to Mysql')
