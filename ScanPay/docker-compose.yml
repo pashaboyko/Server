@@ -1,0 +1,26 @@
+# Base config, overrided for local, uat and prod run
+version: '3.3'
+
+services:
+  scanpay-redis:
+    image: redis:5-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - scanpay-redis:/data
+    ports:
+      - target: 6379
+        published: 6379
+        protocol: tcp
+        mode: host
+    networks:
+      scanpay-net:
+        aliases:
+          - redis
+    
+
+networks:
+  scanpay-net:
+
+volumes:
+  scanpay-redis:
+ 

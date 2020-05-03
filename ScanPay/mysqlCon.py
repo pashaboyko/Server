@@ -4,6 +4,7 @@ import os
 import logg
 import jwt
 from datetime import datetime, timedelta
+from os import getenv
 
 
 JWT_SECRET = 'secret'
@@ -12,26 +13,24 @@ JWT_EXP_DELTA_SECONDS = 20
 
 
 
-'''
-HOST = '127.0.0.1'
-PORT = 3306
-USER = 'root'
-PASSWORD = 'lock172839465'
-DB = 'product_new1'
-CHARSET = 'utf8mb4'
-CURSORCLASS = pymysql.cursors.DictCursor
+HOST_MYSQL = '127.0.0.1'
+PORT_MYSQL = 3306
+USER_MYSQL = 'root'
+PASSWORD_MYSQL = 'lock172839465'
+DB_MYSQL = 'product_new1'
+CHARSET_MYSQL = 'utf8mb4'
+CURSORCLASS_MYSQL = pymysql.cursors.DictCursor
 
 '''
-HOST = '127.0.0.1'
-PORT = 3305
-USER = 'root'
-PASSWORD = '12345678'
-DB = 'product_new1'
-CHARSET = 'utf8mb4'
-CURSORCLASS = pymysql.cursors.DictCursor
+HOST_MYSQL = '127.0.0.1'
+PORT_MYSQL = 3305
+USER_MYSQL = 'root'
+PASSWORD_MYSQL = '12345678'
+DB_MYSQL = 'product_new1'
+CHARSET_MYSQL = 'utf8mb4'
+CURSORCLASS_MYSQL = pymysql.cursors.DictCursor
+'''
 
-
-log=None
 
 
 class MySqlCon:
@@ -39,30 +38,33 @@ class MySqlCon:
     _instance = None
 
     @staticmethod
-    def get_instance(host=HOST,
-                     port=PORT,
-                     user=USER,
-                     password=PASSWORD,
-                     db=DB,
-                     charset=CHARSET,
-                     cursorclass=CURSORCLASS):
+    def get_instance():
         if MySqlCon._instance is None:
-            MySqlCon._instance = MySqlCon(host, port, user, password , db , charset , cursorclass)
+            MySqlCon._instance = MySqlCon()
         return MySqlCon._instance
 
-    def __init__(self, host, port,user, password , db , charset , cursorclass):
-        self.connection= pymysql.connect(host=host,
-                         port=port,
-                         user=user,
-                         password=password,
-                         db=db,
-                         charset=charset,
-                         cursorclass=cursorclass)
+    def __init__(self):
+
+        self._mysql_con = {
+        "host": getenv("HOST_MYSQL", HOST_MYSQL),
+        "port": getenv("PORT_MYSQL", PORT_MYSQL),
+        "user": getenv("USER_MYSQL", USER_MYSQL),
+        "password": (getenv("PASSWORD_MYSQL", PASSWORD_MYSQL)),
+        "db": getenv("DB_MYSQL", DB_MYSQL),
+        "charset": getenv("CHARSET_MYSQL", CHARSET_MYSQL),
+        "cursorclass": getenv("CURSORCLASS_MYSQL", CURSORCLASS_MYSQL),
+        }
+        
+        self.log = logg.get_class_log(self)
+
+        self.log.debug("Trying to connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
+        self.connection= pymysql.connect(**self._mysql_con)
+        self.log.info("Successfully connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
+
 
     def search_barcode(self, barcode):
         data_dict = None
         try:
-
             with self.connection.cursor() as cursor:
                 sql = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
                 cursor.execute(sql, (barcode))
@@ -70,11 +72,12 @@ class MySqlCon:
                 rv = cursor.fetchall()
 
                 if cursor.rowcount > 1:
-                    print("545")
                     raise self.TooManyObjects
+
                 elif cursor.rowcount == 0:
-                    print("34")
                     raise self.DoesNotExist
+
+
                 else:
                     data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
                     data_json = json.loads(data_json, encoding='UTF-8')
@@ -84,8 +87,7 @@ class MySqlCon:
                     #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
 
         except:
-            log.exception('No search')
-
+            log.exception('Error on SELECT product by barcode : {barcode}',extra={'barcode' : barcode})
         return data_dict
       
 
@@ -519,6 +521,16 @@ class MySqlCon:
         except:
             log.exception('No search')
         return "added"
+
+    def close(self):
+        try:
+            self.log.debug("Trying to close conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+            self.connection.close()
+            self.log.debug("Successfully closed conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+
+        except:
+            log.exception("Error with clossing conection {host}:{port}/{db}" , extra=self._mysql_con)
+
     
 def main():
     try:

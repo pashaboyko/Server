@@ -12,22 +12,27 @@ JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
 
+REDIS_HOST = '192.168.99.106'  # host of redis running, can be overrided in env variables
+REDIS_PORT = 6379 
+
+log = None
+redis = None
 
 def json_response(body='', **kwargs):
-    print(body)
+    log.debug("Splunk successful searched by query: {query}",extra={'query' : body}) 
     kwargs['body'] = json.dumps(body or kwargs['body'], ensure_ascii=False)
     kwargs['content_type'] = 'application/json'
-    print(kwargs)
+    log.debug("Starting to send son_response with datkwargsa -> {kwargs}", extra = {"kwargs": kwargs})
     return web.Response(**kwargs)
 
 
 
 async def login(request):
     post_data = await request.post()
-    print(post_data)
+    log.info("POST-login requst with post_data -> {post}", extra = {"post": post_data})
 
     try:
-        print(MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
+        (MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
         user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
         payload = {
         'user_id': user["bordercode"],
@@ -96,6 +101,7 @@ async def receipt(request):
 
 async def get_info(request):
     post_data = await request.post()
+    log.info("POST-login requst with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().product_info(post_data['barcode'])
     except Exception:
@@ -211,6 +217,7 @@ async def auth_middleware(app, handler):
         jwt_token = request.headers.get('authorization', None)
         print(jwt_token)
         print("jwt_token")
+        '''
         if jwt_token:
             try:
                 payload = jwt.decode(jwt_token, JWT_SECRET,
@@ -220,45 +227,64 @@ async def auth_middleware(app, handler):
                 return json_response({'status' : 'error', 'message': 'Token is invalid'},
                                      status=400)
             print (23432432)
-
+        '''
         return await handler(request)
 
     return middleware
-'''
+
 if __name__ == "__main__":
 
     log_directory = 'log'
-    if not os.path.exists(log_directory):
-        os.makedirs(log_directory)
+    log = logg.setup_logging('Server')
+    log = logg.get_log("Web-server")
 
+  
     try:
         con = MySqlCon.get_instance()
 
-    except Exception:
-        log.exception('Error connect to Mysql')
-        pass
-'''
-log=logg.setup_logging('Server')
-app = web.Application(middlewares=[auth_middleware])
-app.router.add_route('POST', '/barcode', get_user)
-app.router.add_route('POST', '/barcodeall',get_user_moreinfo)
-app.router.add_route('POST', '/login', login)
-app.router.add_route('POST', '/info', get_info)
-#app.router.add_route('GET', '/barcodeall', get_user_moreinfo)
-app.router.add_route('POST', '/entering', entering)
-app.router.add_route('POST', '/listProductlimit', listProductlimit)
-app.router.add_route('POST', '/category', subcategory)
-app.router.add_route('POST', '/manufacturer', manufacturer)
-app.router.add_route('POST', '/add', add)
-app.router.add_route('POST', '/add_features', add_features)
-app.router.add_route('POST', '/checkbarcode', checkbarcode)
-app.router.add_route('GET', '/rowcount', get_rowcount)
-app.router.add_route('POST', '/edit', edit)
-app.router.add_route('POST', '/delete', delete)
-app.router.add_route('POST', '/edit_features', edit_features)
-app.router.add_route('POST', '/receipt', receipt)
-#app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
-web.run_app(app, port=3000)
+    except Exception as e :
+        log.exception('Error connect Mysql , Error -> {error}', extra = {"error" : e})
+        MySqlCon.get_instance().close()
+        sys.exit(1)
+
+    try:
+        redis_host = os.getenv('REDIS_HOST', REDIS_HOST)
+        redis_port = int(os.getenv('REDIS_PORT', REDIS_PORT))
+        log.Debug('Trying to connect redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
+        'redis_port': redis_port})
+        redis = redis.Redis(host=redis_host, port=redis_port, db=0)
+        log.Info('Successfully connected redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
+        'redis_port': redis_port})
+    except Exception as e:
+         log.exception('Error connect redis , Error -> {error}', extra = {"error" : e})   
+
+        
+    try:
+        app = web.Application(middlewares=[auth_middleware])
+        app.router.add_route('POST', '/barcode', get_user)
+        app.router.add_route('POST', '/barcodeall',get_user_moreinfo)
+        app.router.add_route('POST', '/login', login)
+        app.router.add_route('POST', '/info', get_info)
+        #app.router.add_route('GET', '/barcodeall', get_user_moreinfo)
+        app.router.add_route('POST', '/entering', entering)
+        app.router.add_route('POST', '/listProductlimit', listProductlimit)
+        app.router.add_route('POST', '/category', subcategory)
+        app.router.add_route('POST', '/manufacturer', manufacturer)
+        app.router.add_route('POST', '/add', add)
+        app.router.add_route('POST', '/add_features', add_features)
+        app.router.add_route('POST', '/checkbarcode', checkbarcode)
+        app.router.add_route('GET', '/rowcount', get_rowcount)
+        app.router.add_route('POST', '/edit', edit)
+        app.router.add_route('POST', '/delete', delete)
+        app.router.add_route('POST', '/edit_features', edit_features)
+        app.router.add_route('POST', '/receipt', receipt)
+        #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
+        web.run_app(app, port=3000)
+    except Exception as e :
+        log.exception('Error start web server , Error -> {error}', extra = {"error" : e})
+        sys.exit(1)
+            
+
 
 
 
