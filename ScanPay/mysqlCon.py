@@ -57,13 +57,14 @@ class MySqlCon:
         
         self.log = logg.get_class_log(self)
 
-        self.log.debug("Trying to connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
+        self.self.log.debug("Trying to connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
         self.connection= pymysql.connect(**self._mysql_con)
         self.log.info("Successfully connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
 
 
     def search_barcode(self, barcode):
         data_dict = None
+        self.log.debug("Trying to find barcode : {barcode}", extra={'barcode' : barcode})
         try:
             with self.connection.cursor() as cursor:
                 sql = "SELECT id_product_value,name,bordercode,price,photo,points  from product_new1.product_value where  bordercode =%s"
@@ -83,16 +84,16 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict = data
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
+                   
 
         except:
-            log.exception('Error on SELECT product by barcode : {barcode}',extra={'barcode' : barcode})
+            self.log.exception('Error on SELECT product by barcode : {barcode}',extra={'barcode' : barcode})
         return data_dict
       
 
     def search_user(self,email,password) :
         data_dict = None
+        self.log.debug("Trying to find barcode : {barcode}", extra={'barcode' : barcode})
         try:
 
             with self.connection.cursor() as cursor:
@@ -105,10 +106,10 @@ class MySqlCon:
 
 
                 if cursor.rowcount > 1:
-                    print("545")
+                    
                     raise self.TooManyObjects
                 elif cursor.rowcount == 0:
-                    print("34")
+                  
                     raise self.DoesNotExist
                 else:
                     data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
@@ -117,11 +118,12 @@ class MySqlCon:
                         data_dict = data
                     
         except:
-            log.exception('No search')
+            self.log.exception('Error on SELECT user by barcode : {barcode}',extra={'barcode' : barcode})
 
         return data_dict
         
     def write_token(self, email, password, token):
+        self.log.debug("Trying to write token for user with email: {email}", extra={'email' : email})
         try:
 
             with self.connection.cursor() as cursor:
@@ -129,11 +131,12 @@ class MySqlCon:
                     cursor.execute(sql1,(token,email, password))
                     self.connection.commit()
         except:
-            log.exception('No search')
+            self.log.exception('Cannot token token for user with email: {email}', extra={'email' : email})
 
         return "ok"
     
     def search_admin(self,barcode,password) :
+        self.log.debug('Trying to find admin with : {barcode}',extra={'barcode' : barcode})
         data_dict = None
         try:
 
@@ -147,7 +150,7 @@ class MySqlCon:
 
 
                 if cursor.rowcount > 1:
-                    #print("545")
+                    
                     raise self.TooManyObjects
                 elif cursor.rowcount == 0:
                         sql = "SELECT * FROM product_new1.admin WHERE bordercode=%s"
@@ -155,7 +158,7 @@ class MySqlCon:
                         if cursor.rowcount != 0:
                             raise self.NotCorrectPassword
                         else:
-                        #print("34")
+                        
                             raise self.DoesNotExist
                 else:
                     data_json = json.dumps(rv, indent=4, ensure_ascii=False, separators=(',', ': '))
@@ -164,12 +167,13 @@ class MySqlCon:
                         data_dict = data
 
         except:
-            log.exception('No search')
+            self.log.exception('Cannot find admin with : {barcode}',extra={'barcode' : barcode})
 
         return data_dict
 
 
     def search_user_bool(self,barcode) -> bool:
+        self.log.debug('Trying to find user with : {barcode}',extra={'barcode' : barcode})
         try:
 
             with self.connection.cursor() as cursor:
@@ -183,53 +187,22 @@ class MySqlCon:
                 else: return False
 
         except:
-            log.exception('No search')
+            self.log.exception('User {barcode} is absent',extra={'barcode' : barcode})
             return False
 
-    def add_row_to_items(self,id_product_value,name,barcode,price, photo, id_category, id_subcategory, id_manufacturer, points, delivery_date, quantity):
-        try:
-            cursor = self.connection.cursor()
-            print("Enter name: ")
-            Name = input()
-            print("Enter bordercode: ")
-            Barr = input()
-            
-            sql = "Insert into product_new1.product_value(id_product_value, name, bordercode, price,id_category,id_subcategory, id_manufacturer, photo, points, delivery_date, quantity) " \
-                  + " values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
 
-            cursor.execute(sql, (id_product_value,name,barcode, price, id_category, id_subcategory, id_manufacturer, photo, points, delivery_date, quantity))
-
-            sql1 = "SELECT * FROM product_new1.product_value"
-            cursor.execute(sql1)
-            for row in cursor:
-                print(row)
-
-            connection.commit()
-
-        finally:
-            connection.close()
-
-    def delete_row(self, barcode):
-        try:
-            cursor = self.connection.cursor()
-            sql = "Delete from  product_new1.product_value where bordercode = %s"
-            rowCount = cursor.execute(sql, (barcode))
-            print("Deleted! ", rowCount, " rows")
-            sql1 = "SELECT * FROM product_new1.product_value"
-            cursor.execute(sql1)
-            for row in cursor:
-                print(row)
-            connection.commit()
-        finally:
-            connection.close()
 
     class DoesNotExist(BaseException):
         pass
 
     class TooManyObjects(BaseException):
         pass
-
+    
+    class NoToken(BaseException):
+        pass
+        
     def relative_subcategory(self, category):
+        self.log.debug("Trying to display the list of subcategories for selected category")
         data_dict = {}
         try:
              with self.connection.cursor() as cursor:
@@ -245,14 +218,13 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict.update({data.get("id_subcategory") : data.get("name")})
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
-
+                  
         except:
-            log.exception('No search')
+            self.log.exception('Looks like there is no subcategories for selected category')
         return data_dict
     
     def manufacturer_list(self,category):
+        self.log.debug("Trying to display the list of manufacturers for selected category")
         data_dict = {}
         try:
              with self.connection.cursor() as cursor:
@@ -268,14 +240,13 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict.update({data.get("id_manufacturer") : data.get("name")})
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
-
+                   
         except:
-            log.exception('No search')
+            self.log.exception('Looks like there is no manufacturers for selectd category')
         return data_dict
     
     def checkbarcode(self,barcode):
+        self.log.debug("Trying to find product with barcode: {barcode}", extra={'barcode':barcode})
         try:
             with self.connection.cursor() as cursor:
                 sql0 = "SELECT *  from product_new1.product_value where  bordercode =%s"
@@ -284,11 +255,26 @@ class MySqlCon:
                 if cursor.rowcount > 0:
                     raise self.DoesNotExist
         except:
-            log.exception('has barcode')
+            self.log.exception('Barcode {barcode} exists', extra={'barcode':barcode})
             raise Exception("has barcode")
-
+    
+    def checktoken(self,token):
+        self.log.debug("Trying to find user with token: {token}", extra={'token':token})
+        try:
+            with self.connection.cursor() as cursor:
+                sql0 = "SELECT *  from product_new1.user where  token =%s"
+                cursor.execute(sql0, (token))
+                rv = cursor.fetchall()
+                if cursor.rowcount == 0:
+                    raise self.NoToken
+                if cursor.rowcount == 1:
+                    self.log.debug("Token exists", extra={'token':token})
+        except:
+            self.log.exception('Token not exists', extra={'token':token})
+            raise Exception("Token not exists")
 
     def rowcount(self):
+        self.log.debug("Trying to count how many products we have in DB")
         try:
             with self.connection.cursor() as cursor:
                 sql0 = "SELECT *  from product_new1.product_value"
@@ -298,19 +284,19 @@ class MySqlCon:
                     raise self.DoesNotExist
                 return {'rowcount' : str(cursor.rowcount)}    
         except:
-            log.exception('no row')
+            self.log.exception('Something went wrong, check DB and try again')
             raise Exception("no row")
 
 
     def listProduct(self, startLimit : int, countProduct : int):
+        self.log.debug("Trying to display the list of products")
         try:
             data_dict = {}
-            print ("sdncjksnadckjnkadsjcnksdanjkcnkjsdancjknds")
+            
             print(startLimit)
             print(countProduct)
             with self.connection.cursor() as cursor:
-                print ("sdncjksnadckjnkadsjcnksdanjkcnkjsdancjknds")
-
+                
                 sql0 = "SELECT id_product_value, product_value.name,bordercode,price,photo,points, product_category.name as 'category' ,product_subcategory.name as 'subcategory' , product_manufacturer.name as 'manufacturer' ,delivery_date,quantity from product_new1.product_value , product_new1.product_category, product_new1.product_subcategory ,product_new1.product_manufacturer where product_value.id_category=product_category.id_category And product_value.id_manufacturer = product_manufacturer.id_manufacturer and product_value.id_subcategory = product_subcategory.id_subcategory limit %s,%s "
                 cursor.execute(sql0, (int(startLimit),int(countProduct)))
                 rv = cursor.fetchall()
@@ -323,15 +309,16 @@ class MySqlCon:
                     for data in data_json:
                         print(data)
                         data_dict.update({data.get("id_product_value") : data})
-                    print (data_dict)    
+                       
         except:
-            log.exception('no row')
+            self.log.exception('Looks like this products are absent')
             raise Exception("no row") 
 
         return data_dict           
         
 
     def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, delivery_date, quantity):
+        self.log.debug("Trying to add product with barcode : {barcode}", extra={'barcode' : barcode})
         try:
             with self.connection.cursor() as cursor:
                 MySqlCon.get_instance().checkbarcode(barcode)
@@ -358,10 +345,11 @@ class MySqlCon:
                     #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))'''
 
         except:
-            log.exception('No search')
+            self.log.exception('There was a problem while adding  product, check your data')
         return "ok"
 
     def add_features_value(self, value, id_feature, barcode):
+        self.log.debug("Trying to add feature values for product with barcode : {barcode}", extra={'barcode' : barcode})
         try:
             with self.connection.cursor() as cursor:
             
@@ -372,28 +360,14 @@ class MySqlCon:
                 cursor.execute(sql, (value,id_feature, barcode))
                 self.connection.commit()
 
-                '''sql1 = "SELECT * FROM product_new1.product_value where bordercode = %s"
-                cursor.execute(sql1, (barcode))
-                rv = cursor.fetchall()
-                if cursor.rowcount > 1:
-                    print("545")
-                    raise self.TooManyObjects
-                elif cursor.rowcount == 0:
-                    print("34")
-                    raise self.DoesNotExist
-                else:
-                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
-                    data_json = json.loads(data_json, encoding='UTF-8')
-                    for data in data_json:
-                        data_dict = data
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))'''
+                
 
         except:
-            log.exception('No search')
+            self.log.exception('There was a problem while adding feature values for product {barcode}, check your data', extra={'barcode' : barcode})
         return "added"
             
     def search_barcode_moreinfo(self, barcode):
+        self.log.debug("Trying to get info for product with barcode : {barcode}", extra={'barcode' : barcode})
         data_dict = None
         try:
             with self.connection.cursor() as cursor:
@@ -413,15 +387,14 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict = data
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
-
+                   
         except:
-            log.exception('No search')
+            self.log.exception("No info for product with barcode : {barcode} or it`s not exist", extra={'barcode' : barcode})
 
         return data_dict
     
     def get_receipt(self, bar, summ, date, id_user):
+        self.log.debug('Trying to put receipt data into DB')
         try:
             with self.connection.cursor() as cursor:
                 
@@ -444,14 +417,14 @@ class MySqlCon:
                 for line in x:
                     sql = "insert into product_new1.check_product_value (id_check_value, barcode) values (%s,%s)"
                     val = int(line)
-                    print(val)
                     cursor.execute(sql, (data_dict['id_check_value'],val))
                     self.connection.commit()
         except:
-            log.exception('No search')
+            self.log.exception('There was a problem while putting receipt to database, check your data')
         return "ok"
         
     def product_info(self, barcode):
+        self.log.debug('Trying to find info about product with barcode: {barcode}', extra={'barcode' : barcode})
         data_dict = {}
         try:
 
@@ -460,7 +433,7 @@ class MySqlCon:
                 cursor.execute(sql, (barcode))
                 rv = cursor.fetchall()
                 if cursor.rowcount == 0:
-                    print("34")
+                  
                     raise self.DoesNotExist
                 else:
                     
@@ -468,12 +441,8 @@ class MySqlCon:
                     data_json = json.loads(data_json, encoding='UTF-8')
                     for data in data_json:
                         data_dict.update({data.get("feature") : data.get("value")})
-                   
-                   # print(data)
-                    #print(json.dumps(data, ensure_ascii=False, separators=(',', ': ')))
-
         except:
-            log.exception('No search')
+            self.log.exception('Product {barcode} wasn`t find or there is no info about it', extra={'barcode' : barcode})
         return data_dict
 
     def checkbarcode_true(self,barcode):
@@ -482,12 +451,12 @@ class MySqlCon:
             cursor.execute(sql0, (barcode))
             rv = cursor.fetchall()
             if cursor.rowcount == 0:
-                    #print("34")
                 raise self.Error
             else: 
                 return "ok"
 
     def delete(self, barcode):
+        self.log.debug('Trying to delete product with barcode: {barcode}', extra={'barcode' : barcode})
         try:
             print(barcode)
             with self.connection.cursor() as cursor:
@@ -495,10 +464,11 @@ class MySqlCon:
                 cursor.execute(sql, (barcode))
                 self.connection.commit()
         except:
-            log.exception('No search')
+            self.log.exception('Product with barcode {barcode} is absent', extra={'barcode' : barcode})
         return "ok"
     
     def edit_products(self,id_product,name,price,id_category,id_subcategory,id_manufacturer, photo, points, delivery_date,quantity):
+        self.log.debug('Trying to edit product with id: {id_product}', extra={'id_product' : id_product})
         try:
             with self.connection.cursor() as cursor:
                 
@@ -507,10 +477,11 @@ class MySqlCon:
                 cursor.execute(sql, (name,price,id_category,id_subcategory,id_manufacturer, photo, points, delivery_date,quantity, id_product))
                 self.connection.commit()
         except:
-            log.exception('No search')
+            self.log.exception('Product with id {id_product} is absent', extra={'id_product' : id_product})
         return "ok"
 
     def edit_features_value(self,value, id_feature, id_product):
+        self.log.debug('Trying to edit features value for product with id: {id_product}', extra={'id_product' : id_product})
         try:
             with self.connection.cursor() as cursor:
             
@@ -519,17 +490,17 @@ class MySqlCon:
                 self.connection.commit()
 
         except:
-            log.exception('No search')
+            self.log.exception('There was an error while editing')
         return "added"
 
     def close(self):
         try:
-            self.log.debug("Trying to close conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+            self.self.log.debug("Trying to close conection -> {host}:{port}/{db}" , extra=self._mysql_con)
             self.connection.close()
-            self.log.debug("Successfully closed conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+            self.self.log.debug("Successfully closed conection -> {host}:{port}/{db}" , extra=self._mysql_con)
 
         except:
-            log.exception("Error with clossing conection {host}:{port}/{db}" , extra=self._mysql_con)
+            self.log.exception("Error with clossing conection {host}:{port}/{db}" , extra=self._mysql_con)
 
     
 def main():
@@ -552,7 +523,7 @@ def main():
         print(con.write_token("re@gmail.com", "secret1","1234567"))
     except Exception:
 
-        log.exception('Error connect to Mysql')
+        self.log.exception('Error connect to Mysql')
         pass
 
 

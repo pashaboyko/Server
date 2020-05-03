@@ -29,7 +29,7 @@ def json_response(body='', **kwargs):
 
 async def login(request):
     post_data = await request.post()
-    log.info("POST-login requst with post_data -> {post}", extra = {"post": post_data})
+    log.debug("POST-login request with post_data -> {post}", extra = {"post": post_data})
 
     try:
         (MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
@@ -42,6 +42,7 @@ async def login(request):
         jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
         MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token)
     except Exception:
+        log.exception('POST-login request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
     '''payload = {
         'user_id': user["bordercode"],
@@ -55,56 +56,57 @@ async def login(request):
     
 async def entering(request):
     post_data = await request.post()
-    print(post_data)
-
+    log.debug("POST-entering request with post_data -> {post}", extra = {"post": post_data})
     try:
-        print(MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']))
+ 
         admin = MySqlCon.get_instance().search_admin(post_data['barcode'],post_data['password']) 
     except Exception:
+        log.exception('POST-entering request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
-    #data_json = json.dumps(admin)
-    #print(data_json)
-    #return json_response(admin)
     return json_response({'status': '200', 'message': 'Enter successful'})
 
 
 async def get_user(request):
     post_data = await request.post()
+    log.debug("POST get_user request with post_data -> {post}", extra = {"post": post_data})
     try:
         print(post_data['barcode'])
         print("sdnckdncjkdsncjn")
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
     except Exception:
+        log.exception('POST get_user request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
-    print(data_json)
     return json_response(item)
     
 async def get_user_moreinfo(request):
     post_data = await request.post()
+    log.debug("POST get_user_moreinfo request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().search_barcode_moreinfo(post_data['barcode'])
     except Exception:
+        log.exception('POST get_user_moreinfo request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
-    print(data_json)
     return json_response(item)
     
 async def receipt(request):
     post_data = await request.post()
+    log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().get_receipt(post_data['barcode'],post_data['id_user'],post_data['sum'],post_data['date'])
     except Exception:
-        #print("njenvjkberjbv")
+        log.exception('POST-receipt request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
 
 async def get_info(request):
     post_data = await request.post()
-    log.info("POST-login requst with post_data -> {post}", extra = {"post": post_data})
+    log.debug("POST get_info request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().product_info(post_data['barcode'])
     except Exception:
+        log.exception('POST get_info request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
     print(data_json)
@@ -112,30 +114,45 @@ async def get_info(request):
     
 async def subcategory(request):
     post_data = await request.post()
+    log.debug("POST-subcategory request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().relative_subcategory(post_data['category'])
     except Exception:
+        log.exception('POST-subcategory request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
-    print(data_json)
+    
     return json_response(item)
 
 async def manufacturer(request):
     post_data = await request.post()
+    log.debug("POST-manufacturer request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().manufacturer_list(post_data['category'])
     except Exception:
+        log.exception('POST-manufacturer request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response(item)
 
 async def checkbarcode(request):
     post_data = await request.post()
+    log.debug("POST-checkbarcode request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().checkbarcode(post_data['barcode'])
     except Exception:
-        print("njenvjkberjbv")
+        log.exception('POST-checkbarcode request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Barcode is new'}, status=200)
+    
+async def checktoken(request):
+    post_data = await request.post()
+    log.debug("POST-checktoken request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        MySqlCon.get_instance().checktoken(post_data['token'])
+    except Exception:
+        log.exception('POST-checktoken request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Token exists'}, status=200)
 
 '''async def checkbarcode_true(request):
     post_data = await request.post()
@@ -147,64 +164,72 @@ async def checkbarcode(request):
 
 async def add(request):
     post_data = await request.post()
+    log.debug("POST-add request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().add_row_to_products(post_data['name'],post_data['barcode'],post_data['price'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['delivery_date'], post_data['quantity'])
     except Exception:
+        log.exception('POST-add request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
 async def edit(request):
     post_data = await request.post()
-    print("quantity :" + post_data['quantity'])
+    log.debug("POST-edit request with post_data -> {post}", extra = {"post": post_data})
     try:
-        print(post_data['id_product'],post_data['name'],post_data['price'],post_data['id_category'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['photo'], post_data['points'],post_data['delivery_date'], post_data['quantity'])
         MySqlCon.get_instance().edit_products(post_data['id_product'],post_data['name'],post_data['price'],post_data['id_category'],post_data['id_subcategory'],post_data['id_manufacturer'], post_data['photo'], post_data['points'],post_data['delivery_date'], post_data['quantity'])
     except Exception:
+        log.exception('POST-edit request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
 async def add_features(request):
     post_data = await request.post()
+    log.debug("POST-add_features request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().add_features_value(post_data['value'], post_data['id_feature'],post_data['barcode'])
     except Exception:
+        log.exception('POST-add_features request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
 
 async def edit_features(request):
     post_data = await request.post()
-    print(post_data['value'], post_data['id_feature'],post_data['id_product'])
+    log.debug("POST-edit_features request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().edit_features_value(post_data['value'], post_data['id_feature'],post_data['id_product'])
     except Exception:
+        log.exception('POST-edit_features request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Added'}, status=200)
     
 async def delete(request):
     post_data = await request.post()
-    print(post_data['barcode'])
+    log.debug("POST-delete request with post_data -> {post}", extra = {"post": post_data})
     try:
         MySqlCon.get_instance().delete(post_data['barcode'])
     except Exception:
+        log.exception('POST-delete request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response({'status' : 'ok', 'message': 'Deleted'}, status=200)
 
 
 async def get_rowcount(request):
+    log.debug("POST-get_rowcount request")
     try:
         row = MySqlCon.get_instance().rowcount()
     except Exception:
+        log.exception('POST-get_rowcount request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response(row)
 
 async def listProductlimit(request):
     post_data = await request.post()
-    print(post_data['startLimit'],post_data['limit'])
-    print("233232212112")
+    log.debug("POST-listProductlimit request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().listProduct(post_data['startLimit'],post_data['limit'])
-        print(item)
+     
     except Exception:
+        log.exception('POST-listProductlimit request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     return json_response(item)
 
@@ -215,8 +240,7 @@ async def auth_middleware(app, handler):
         request.user = None
 
         jwt_token = request.headers.get('authorization', None)
-        print(jwt_token)
-        print("jwt_token")
+        
         '''
         if jwt_token:
             try:
@@ -250,10 +274,10 @@ if __name__ == "__main__":
     try:
         redis_host = os.getenv('REDIS_HOST', REDIS_HOST)
         redis_port = int(os.getenv('REDIS_PORT', REDIS_PORT))
-        log.Debug('Trying to connect redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
+        log.debug('Trying to connect redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
         'redis_port': redis_port})
         redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-        log.Info('Successfully connected redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
+        log.info('Successfully connected redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
         'redis_port': redis_port})
     except Exception as e:
          log.exception('Error connect redis , Error -> {error}', extra = {"error" : e})   
@@ -273,6 +297,7 @@ if __name__ == "__main__":
         app.router.add_route('POST', '/add', add)
         app.router.add_route('POST', '/add_features', add_features)
         app.router.add_route('POST', '/checkbarcode', checkbarcode)
+        app.router.add_route('POST', '/checktoken', checktoken)
         app.router.add_route('GET', '/rowcount', get_rowcount)
         app.router.add_route('POST', '/edit', edit)
         app.router.add_route('POST', '/delete', delete)
