@@ -67,15 +67,23 @@ async def get_user(request):
     post_data = await request.post()
     log.debug("POST get_user request with post_data -> {post}", extra = {"post": post_data})
     try:
-        print(post_data['barcode'])
-        print("sdnckdncjkdsncjn")
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
     except Exception:
         log.exception('POST get_user request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
     return json_response(item)
-    
+
+async def get_news(request):
+    post_data = await request.post()
+    log.debug("POST get_news request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        item = MySqlCon.get_instance().get_news(post_data['id_news'])
+    except Exception:
+        log.exception('POST get_news request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    return json_response(item)  
 
 async def get_receipt(request):
     print("kemfklkl")
@@ -104,7 +112,18 @@ async def get_user_moreinfo(request):
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
     return json_response(item)
-    
+ 
+async def user_info(request):
+    post_data = await request.post()
+    log.debug("POST user_info request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        item = MySqlCon.get_instance().user_info(post_data['id_user'])
+    except Exception:
+        log.exception('POST user_info request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    return json_response(item)
+ 
 async def ser_receipt(request):
     post_data = await request.post()
     log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
@@ -126,7 +145,19 @@ async def get_info(request):
     data_json = json.dumps(item)
     print(data_json)
     return json_response(item)
-    
+  
+async def get_best(request):
+    post_data = await request.post()
+    log.debug("POST get_best request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        item = MySqlCon.get_instance().get_best(post_data['id_best'])
+    except Exception:
+        log.exception('POST get_best request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    print(data_json)
+    return json_response(item)
+  
 async def subcategory(request):
     post_data = await request.post()
     log.debug("POST-subcategory request with post_data -> {post}", extra = {"post": post_data})
@@ -329,6 +360,9 @@ if __name__ == "__main__":
         app.router.add_route('POST', '/setreceipt', ser_receipt)
         app.router.add_route('GET', '/receipt', get_receipt)
         #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
+        app.router.add_route('POST', '/user_info', user_info)
+        app.router.add_route('POST', '/get_best', get_best)
+        app.router.add_route('POST', '/get_news', get_news)
         web.run_app(app, port=3000)
     except Exception as e :
         log.exception('Error start web server , Error -> {error}', extra = {"error" : e})
