@@ -11,7 +11,7 @@ JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
 
-
+'''
 
 HOST_MYSQL = '127.0.0.1'
 PORT_MYSQL = 3306
@@ -29,7 +29,7 @@ PASSWORD_MYSQL = '12345678'
 DB_MYSQL = 'product_new1'
 CHARSET_MYSQL = 'utf8mb4'
 CURSORCLASS_MYSQL = pymysql.cursors.DictCursor
-'''
+
 
 
 
@@ -378,10 +378,10 @@ class MySqlCon:
                 rv = cursor.fetchall()
 
                 if cursor.rowcount > 1:
-                    print("545")
+                    
                     raise self.TooManyObjects
                 elif cursor.rowcount == 0:
-                    print("34")
+          
                     raise self.DoesNotExist
                 else:
                     data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
@@ -391,6 +391,33 @@ class MySqlCon:
                    
         except:
             self.log.exception("No info for product with barcode : {barcode} or it`s not exist", extra={'barcode' : barcode})
+
+        return data_dict
+    
+    def user_info(self, id_user):
+        self.log.debug("Trying to get info about user with id: {id_user}", extra={'id_user' : id_user})
+        data_dict = None
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "SELECT * from product_new1.user where user.id_user = %s"
+                cursor.execute(sql, (id_user))
+
+                rv = cursor.fetchall()
+
+                if cursor.rowcount > 1:
+                    
+                    raise self.TooManyObjects
+                elif cursor.rowcount == 0:
+                   
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict = data
+                   
+        except:
+            self.log.exception("No info about user with id : {id_user} or not exist", extra={'id_user' : id_user})
 
         return data_dict
     
@@ -448,7 +475,42 @@ class MySqlCon:
         except:
             self.log.exception('There was a problem while putting receipt to database, check your data')
         return "ok"
+    
+    def set_best(self, name, price, photo):
+        self.log.debug('Trying to put best product into DB')
+        try:
+            with self.connection.cursor() as cursor:
+                
+            
+                sql1="INSERT INTO product_new1.best_product_value(name, price, photo) values (%s, %s, %s)"   
+                cursor.execute(sql1, (name, price, photo))
+                self.connection.commit()
+        except:
+            self.log.exception('There was a problem while putting best product to database, check your data')
+        return "ok"
         
+    def get_best(self, id_best):
+        self.log.debug('Trying to get best product from DB')
+        try:
+            with self.connection.cursor() as cursor:
+                sql1="SELECT * FROM product_new1.best_product_value WHERE best_product_value.id_product = %s"   
+                cursor.execute(sql1, (id_best))
+                self.connection.commit()
+        except:
+            self.log.exception('There was a problem while getting best product from database, check your data')
+        return "ok"
+        
+    def delete_best(self, id_best):
+        self.log.debug('Trying to DELETE best product from DB')
+        try:
+            with self.connection.cursor() as cursor:
+                sql1="DELETE FROM product_new1.best_product_value WHERE best_product_value.id_product = %s"   
+                cursor.execute(sql1, (id_best))
+                self.connection.commit()
+        except:
+            self.log.exception('There was a problem while deleting best product from database, check your data')
+        return "ok"
+    
     def product_info(self, barcode):
         self.log.debug('Trying to find info about product with barcode: {barcode}', extra={'barcode' : barcode})
         data_dict = {}
@@ -547,7 +609,10 @@ def main():
         #con.delete('5645')
         #print(con.get_receipt('644832819197 438233939273 437628788237', 5000, '15.05.2020 13:07:23'))
         #print(con.write_token("re@gmail.com", "secret1","1234567"))
-        print(con.get_receipt("1"))
+        #print(con.get_receipt("1"))
+        #print(con.user_info(3))
+        #print(con.delete_best(3))
+        
     except Exception:
 
         self.log.exception('Error connect to Mysql')
