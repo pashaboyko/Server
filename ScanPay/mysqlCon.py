@@ -16,7 +16,7 @@ JWT_EXP_DELTA_SECONDS = 20
 HOST_MYSQL = '127.0.0.1'
 PORT_MYSQL = 3306
 USER_MYSQL = 'root'
-PASSWORD_MYSQL = 'lock172839465'
+PASSWORD_MYSQL = 'boyko172839465'
 DB_MYSQL = 'product_new1'
 CHARSET_MYSQL = 'utf8mb4'
 CURSORCLASS_MYSQL = pymysql.cursors.DictCursor
@@ -57,7 +57,7 @@ class MySqlCon:
         
         self.log = logg.get_class_log(self)
 
-        self.self.log.debug("Trying to connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
+        self.log.debug("Trying to connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
         self.connection= pymysql.connect(**self._mysql_con)
         self.log.info("Successfully connect to My SQL {host}:{port}/{db}" , extra=self._mysql_con)
 
@@ -93,7 +93,8 @@ class MySqlCon:
 
     def search_user(self,email,password) :
         data_dict = None
-        self.log.debug("Trying to find barcode : {barcode}", extra={'barcode' : barcode})
+        print(password)
+        self.log.debug("Trying to find email(with password) : {email}", extra={'email' : email})
         try:
 
             with self.connection.cursor() as cursor:
@@ -118,7 +119,7 @@ class MySqlCon:
                         data_dict = data
                     
         except:
-            self.log.exception('Error on SELECT user by barcode : {barcode}',extra={'barcode' : barcode})
+            self.log.exception('Error on SELECT user by email : {email}',extra={'email' : email})
 
         return data_dict
         
@@ -393,7 +394,32 @@ class MySqlCon:
 
         return data_dict
     
-    def get_receipt(self, bar, summ, date, id_user):
+    def get_receipt(self, id_user):
+        self.log.debug('Trying to put receipt data into DB')
+        try:
+            print(id_user)
+            data_dict = {}
+            data_d = {}
+            with self.connection.cursor() as cursor:
+                sql2 ="SELECT * from product_new1.check_value where check_value.id_user = %s"
+                cursor.execute(sql2, (str(id_user)))
+                rv = cursor.fetchall()
+                if cursor.rowcount == 0:
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict.update({data.get("id_check_value") : data})
+                    data_d = {"receipt" :data_dict }    
+        except:
+            self.log.exception('There was a problem while putting receipt to database, check your data')
+        return data_d
+            
+
+
+
+    def set_receipt(self, bar, summ, date, id_user):
         self.log.debug('Trying to put receipt data into DB')
         try:
             with self.connection.cursor() as cursor:
@@ -520,7 +546,8 @@ def main():
         #con.edit_features_value()
         #con.delete('5645')
         #print(con.get_receipt('644832819197 438233939273 437628788237', 5000, '15.05.2020 13:07:23'))
-        print(con.write_token("re@gmail.com", "secret1","1234567"))
+        #print(con.write_token("re@gmail.com", "secret1","1234567"))
+        print(con.get_receipt("1"))
     except Exception:
 
         self.log.exception('Error connect to Mysql')

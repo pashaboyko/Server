@@ -1,8 +1,11 @@
 import os
 import logg
 import json
+from redisCon import RedisCon
 from datetime import datetime, timedelta
 from mysqlCon import MySqlCon
+import sys
+
 
 from aiohttp import web
 import jwt
@@ -10,16 +13,17 @@ import jwt
 
 JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
-JWT_EXP_DELTA_SECONDS = 20
+JWT_EXP_DELTA_SECONDS = 2592000
 
-REDIS_HOST = '192.168.99.106'  # host of redis running, can be overrided in env variables
-REDIS_PORT = 6379 
 
 log = None
-redis = None
+redis_con = None
+
+
+
 
 def json_response(body='', **kwargs):
-    log.debug("Splunk successful searched by query: {query}",extra={'query' : body}) 
+    log.debug("start make json_response woth body: {body}",extra={'body' : body}) 
     kwargs['body'] = json.dumps(body or kwargs['body'], ensure_ascii=False)
     kwargs['content_type'] = 'application/json'
     log.debug("Starting to send son_response with datkwargsa -> {kwargs}", extra = {"kwargs": kwargs})
@@ -35,24 +39,17 @@ async def login(request):
         (MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
         user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
         payload = {
-        'user_id': user["bordercode"],
+        'user_id': user['id_user'],
+        'barcode': user["bordercode"],
         'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
         }
 
         jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
-        MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token)
+        MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token.decode('utf-8'))
     except Exception:
         log.exception('POST-login request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'},status = 400)
-    '''payload = {
-        'user_id': user["bordercode"],
-        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
-    }
-
-    jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
-    MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token)
-    print(jwt_token)'''
-    return json_response({'status': 'ok', 'message': 'Token added:' + jwt_token.decode('utf-8')})
+    return json_response({'status': 'ok', 'message': jwt_token.decode('utf-8')})
     
 async def entering(request):
     post_data = await request.post()
@@ -79,6 +76,24 @@ async def get_user(request):
     data_json = json.dumps(item)
     return json_response(item)
     
+
+async def get_receipt(request):
+    print("kemfklkl")
+    print(request.user)
+    if request.user:
+        log.debug("GET get_user_moreinfo request ")
+        print("kemfklkl")
+        try:
+            item = MySqlCon.get_instance().get_receipt(request.user)
+            print 
+        except Exception:
+            log.exception('POST get_user_moreinfo request wasn`t done')
+            return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+        data_json = json.dumps(item)
+        return json_response(item)
+    else: return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)    
+
+
 async def get_user_moreinfo(request):
     post_data = await request.post()
     log.debug("POST get_user_moreinfo request with post_data -> {post}", extra = {"post": post_data})
@@ -90,7 +105,7 @@ async def get_user_moreinfo(request):
     data_json = json.dumps(item)
     return json_response(item)
     
-async def receipt(request):
+async def ser_receipt(request):
     post_data = await request.post()
     log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
     try:
@@ -234,24 +249,41 @@ async def listProductlimit(request):
     return json_response(item)
 
 
+#async def 
+
 
 async def auth_middleware(app, handler):
     async def middleware(request):
         request.user = None
 
         jwt_token = request.headers.get('authorization', None)
+
+        request.user = None
         
-        '''
         if jwt_token:
             try:
+                print(jwt_token)
+                print("jwt_token")
+
                 payload = jwt.decode(jwt_token, JWT_SECRET,
                                      algorithms=[JWT_ALGORITHM])
-                print (payload)
-            except (jwt.DecodeError, jwt.ExpiredSignatureError):
+                print(payload)
+            
+
+                if(not RedisCon.get_instance().searchTocken(jwt_token)):
+
+                    MySqlCon.get_instance().checktoken(jwt_token)
+
+                    RedisCon.get_instance().setData(payload['user_id'], jwt_token, 216000)
+
+
+            except Exception as e:
+                print(e)
                 return json_response({'status' : 'error', 'message': 'Token is invalid'},
-                                     status=400)
-            print (23432432)
-        '''
+                                     status=401)
+
+            request.user=payload["user_id"]  
+            print(request.user)  
         return await handler(request)
 
     return middleware
@@ -270,19 +302,11 @@ if __name__ == "__main__":
         log.exception('Error connect Mysql , Error -> {error}', extra = {"error" : e})
         MySqlCon.get_instance().close()
         sys.exit(1)
-
     try:
-        redis_host = os.getenv('REDIS_HOST', REDIS_HOST)
-        redis_port = int(os.getenv('REDIS_PORT', REDIS_PORT))
-        log.debug('Trying to connect redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
-        'redis_port': redis_port})
-        redis = redis.Redis(host=redis_host, port=redis_port, db=0)
-        log.info('Successfully connected redis {redis_host}:{redis_port}', extra={'redis_host': redis_host,
-        'redis_port': redis_port})
+        redis_con = RedisCon.get_instance()
     except Exception as e:
          log.exception('Error connect redis , Error -> {error}', extra = {"error" : e})   
 
-        
     try:
         app = web.Application(middlewares=[auth_middleware])
         app.router.add_route('POST', '/barcode', get_user)
@@ -302,7 +326,8 @@ if __name__ == "__main__":
         app.router.add_route('POST', '/edit', edit)
         app.router.add_route('POST', '/delete', delete)
         app.router.add_route('POST', '/edit_features', edit_features)
-        app.router.add_route('POST', '/receipt', receipt)
+        app.router.add_route('POST', '/setreceipt', ser_receipt)
+        app.router.add_route('GET', '/receipt', get_receipt)
         #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
         web.run_app(app, port=3000)
     except Exception as e :
