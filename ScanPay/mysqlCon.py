@@ -500,6 +500,17 @@ class MySqlCon:
             self.log.exception('There was a problem while getting best product from database, check your data')
         return "ok"
         
+    def get_news(self, id_news):
+        self.log.debug('Trying to get news from DB')
+        try:
+            with self.connection.cursor() as cursor:
+                sql1="SELECT * FROM product_new1.news WHERE news.id_news = %s"   
+                cursor.execute(sql1, (id_news))
+                self.connection.commit()
+        except:
+            self.log.exception('There was a problem while getting news from database, check your data')
+        return "ok"    
+        
     def delete_best(self, id_best):
         self.log.debug('Trying to DELETE best product from DB')
         try:
