@@ -126,13 +126,18 @@ async def user_info(request):
  
 async def ser_receipt(request):
     post_data = await request.post()
-    log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
-    try:
-        MySqlCon.get_instance().get_receipt(post_data['barcode'],post_data['id_user'],post_data['sum'],post_data['date'])
-    except Exception:
-        log.exception('POST-receipt request wasn`t done')
-        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
+
+    if(request.user):
+
+        log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
+        try:
+            MySqlCon.get_instance().get_receipt(post_data['barcode'],post_data['sum'],post_data['date'],request.user)
+        except Exception:
+            log.exception('POST-receipt request wasn`t done')
+            return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+        return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
+    else: return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400) 
+
 
 async def get_info(request):
     post_data = await request.post()
