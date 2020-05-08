@@ -4,7 +4,9 @@ import json
 from redisCon import RedisCon
 from datetime import datetime, timedelta
 from mysqlCon import MySqlCon
+from email_sender import EmailSender
 import sys
+import random
 
 
 from aiohttp import web
@@ -26,6 +28,7 @@ def json_response(body='', **kwargs):
     log.debug("start make json_response woth body: {body}",extra={'body' : body}) 
     kwargs['body'] = json.dumps(body or kwargs['body'], ensure_ascii=False)
     kwargs['content_type'] = 'application/json'
+    print(kwargs)
     log.debug("Starting to send son_response with datkwargsa -> {kwargs}", extra = {"kwargs": kwargs})
     return web.Response(**kwargs)
 
@@ -36,7 +39,6 @@ async def login(request):
     log.debug("POST-login request with post_data -> {post}", extra = {"post": post_data})
 
     try:
-        (MySqlCon.get_instance().search_user(post_data['email'],post_data['password']))
         user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
         payload = {
         'user_id': user['id_user'],
@@ -75,10 +77,8 @@ async def get_user(request):
     return json_response(item)
 
 async def get_news(request):
-    post_data = await request.post()
-    log.debug("POST get_news request with post_data -> {post}", extra = {"post": post_data})
     try:
-        item = MySqlCon.get_instance().get_news(post_data['id_news'])
+        item = MySqlCon.get_instance().get_news()
     except Exception:
         log.exception('POST get_news request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
@@ -86,17 +86,15 @@ async def get_news(request):
     return json_response(item)  
 
 async def get_receipt(request):
-    print("kemfklkl")
     print(request.user)
     if request.user:
         log.debug("GET get_user_moreinfo request ")
-        print("kemfklkl")
         try:
             item = MySqlCon.get_instance().get_receipt(request.user)
             print 
         except Exception:
             log.exception('POST get_user_moreinfo request wasn`t done')
-            return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+            return json_response({'status': '400', 'message': 'Wrong credentials'}, status=225)
         data_json = json.dumps(item)
         return json_response(item)
     else: return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)    
@@ -114,16 +112,17 @@ async def get_user_moreinfo(request):
     return json_response(item)
  
 async def user_info(request):
-    post_data = await request.post()
-    log.debug("POST user_info request with post_data -> {post}", extra = {"post": post_data})
-    try:
-        item = MySqlCon.get_instance().user_info(post_data['id_user'])
-    except Exception:
-        log.exception('POST user_info request wasn`t done')
-        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    data_json = json.dumps(item)
-    return json_response(item)
- 
+    
+    if(request.user):
+        try:
+            item = MySqlCon.get_instance().user_info(request.user)
+        except Exception:
+            log.exception('GET user_info request wasn`t done')
+            return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+        data_json = json.dumps(item)
+        return json_response(item)
+    else: return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400) 
+
 async def ser_receipt(request):
     post_data = await request.post()
 
@@ -131,12 +130,55 @@ async def ser_receipt(request):
 
         log.debug("POST-receipt request with post_data -> {post}", extra = {"post": post_data})
         try:
-            MySqlCon.get_instance().get_receipt(post_data['barcode'],post_data['sum'],post_data['date'],request.user)
+            MySqlCon.get_instance().set_receipt(post_data['barcode'],post_data['sum'],post_data['date'],request.user)
         except Exception:
             log.exception('POST-receipt request wasn`t done')
             return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
         return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
     else: return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400) 
+
+
+async def new_account(request):
+    post_data = await request.post()
+    log.debug("POST new_account request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        code = post_data['code']
+        email = post_data['email']
+        print(post_data['name'],post_data['phone'],email,post_data['password'],email)
+        if RedisCon.get_instance().searchCode(email,code):
+            password = post_data['password']
+            MySqlCon.get_instance().add_row_to_user(random.randint(2345600000000, 2345700000000), post_data['name'],post_data['phone'],email,post_data['password'])
+            user = MySqlCon.get_instance().search_user(post_data['email'],post_data['password'])
+            print(user)
+            payload = {
+            'user_id': user['id_user'],
+            'barcode': user["bordercode"],
+            'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
+            }
+
+            jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
+            MySqlCon.get_instance().write_token(post_data['email'],post_data['password'],jwt_token.decode('utf-8'))
+        else: return json_response({'status': '420', 'message': 'Wrong code'}, status=420)
+    except Exception:
+        log.exception('POST get_info request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status': 'ok', 'message': jwt_token.decode('utf-8')})
+
+
+async def check_email(request):
+    post_data = await request.post()
+    log.debug("POST check_email request with post_data -> {post}", extra = {"post": post_data})
+    try:
+        email = post_data['email']
+        MySqlCon.get_instance().check_email(email)
+        #EmailSender(post_data['email'], Emairandom.randint(2345600000000, 2345700000000))
+        code = random.randint(1000, 9999)
+        EmailSender(email, code)
+        RedisCon.get_instance().setCode(email, code)
+    except Exception:
+        log.exception('POST get_info request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    return json_response({'status' : 'ok', 'message': 'Receipt was saved'}, status=200)
 
 
 async def get_info(request):
@@ -147,8 +189,6 @@ async def get_info(request):
     except Exception:
         log.exception('POST get_info request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
-    data_json = json.dumps(item)
-    print(data_json)
     return json_response(item)
   
 async def get_best(request):
@@ -162,7 +202,7 @@ async def get_best(request):
     data_json = json.dumps(item)
     print(data_json)
     return json_response(item)
-  
+
 async def subcategory(request):
     post_data = await request.post()
     log.debug("POST-subcategory request with post_data -> {post}", extra = {"post": post_data})
@@ -363,11 +403,14 @@ if __name__ == "__main__":
         app.router.add_route('POST', '/delete', delete)
         app.router.add_route('POST', '/edit_features', edit_features)
         app.router.add_route('POST', '/setreceipt', ser_receipt)
+        app.router.add_route('POST', '/get_best', get_best)
+        app.router.add_route('POST', '/add_account', new_account)
+        app.router.add_route('POST', '/check_email', check_email)
         app.router.add_route('GET', '/receipt', get_receipt)
         #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
-        app.router.add_route('POST', '/user_info', user_info)
-        app.router.add_route('POST', '/get_best', get_best)
-        app.router.add_route('POST', '/get_news', get_news)
+        app.router.add_route('GET', '/user_info', user_info)
+        app.router.add_route('GET', '/get_news', get_news)
+
         web.run_app(app, port=3000)
     except Exception as e :
         log.exception('Error start web server , Error -> {error}', extra = {"error" : e})

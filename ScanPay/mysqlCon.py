@@ -11,7 +11,7 @@ JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
 
-'''
+
 
 HOST_MYSQL = '127.0.0.1'
 PORT_MYSQL = 3306
@@ -29,7 +29,7 @@ PASSWORD_MYSQL = '12345678'
 DB_MYSQL = 'product_new1'
 CHARSET_MYSQL = 'utf8mb4'
 CURSORCLASS_MYSQL = pymysql.cursors.DictCursor
-
+'''
 
 
 
@@ -135,6 +135,27 @@ class MySqlCon:
             self.log.exception('Cannot token token for user with email: {email}', extra={'email' : email})
 
         return "ok"
+
+
+    def check_email(self, email):
+        data_dict = None
+        self.log.debug("Trying to find email : {email}", extra={'email' : email})
+        try:
+
+            with self.connection.cursor() as cursor:
+
+                sql = "SELECT * FROM product_new1.user WHERE email=%s"
+                cursor.execute(sql, (email))
+
+                rv = cursor.fetchall()
+                if cursor.rowcount > 0:
+                    raise self.DoesNotExist        
+        
+        except:
+            self.log.exception('Error on SELECT user by email : {email}',extra={'email' : email})
+            raise Exception("Email is not new")
+
+
     
     def search_admin(self,barcode,password) :
         self.log.debug('Trying to find admin with : {barcode}',extra={'barcode' : barcode})
@@ -318,6 +339,20 @@ class MySqlCon:
         return data_dict           
         
 
+    def add_row_to_user (self,barcode,name,phone,email, password):
+        self.log.debug("Trying to add user with email : {email}", extra={'email' : email})
+        try:
+            with self.connection.cursor() as cursor:
+                MySqlCon.get_instance().checkbarcode(barcode)
+                sql = "INSERT INTO product_new1.user (bordercode, name, phone, email, password) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(sql, (barcode,name, phone, email, password))
+                self.connection.commit()
+        except:
+            self.log.exception('There was a problem while adding user, check your data')
+        return "ok"
+
+
+
     def add_row_to_products(self,name,barcode,price,id_subcategory,id_manufacturer, delivery_date, quantity):
         self.log.debug("Trying to add product with barcode : {barcode}", extra={'barcode' : barcode})
         try:
@@ -399,7 +434,7 @@ class MySqlCon:
         data_dict = None
         try:
             with self.connection.cursor() as cursor:
-                sql = "SELECT * from product_new1.user where user.id_user = %s"
+                sql = 'SELECT user.bordercode as "barcode", user.name as "name", user.phone as "phone", user.email as "email" , user.points as "points"  from product_new1.user where user.id_user = %s'
                 cursor.execute(sql, (id_user))
 
                 rv = cursor.fetchall()
@@ -500,16 +535,26 @@ class MySqlCon:
             self.log.exception('There was a problem while getting best product from database, check your data')
         return "ok"
         
-    def get_news(self, id_news):
+    def get_news(self):
         self.log.debug('Trying to get news from DB')
         try:
+            data_dict = {}
+            data_d = {}
             with self.connection.cursor() as cursor:
-                sql1="SELECT * FROM product_new1.news WHERE news.id_news = %s"   
-                cursor.execute(sql1, (id_news))
-                self.connection.commit()
+                sql1="SELECT * FROM product_new1.news"   
+                cursor.execute(sql1)
+                rv = cursor.fetchall()
+                if cursor.rowcount == 0:
+                    raise self.DoesNotExist
+                else:
+                    data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
+                    data_json = json.loads(data_json, encoding='UTF-8')
+                    for data in data_json:
+                        data_dict.update({data.get("id_news") : data})
+                    data_d = {"news" :data_dict }    
         except:
-            self.log.exception('There was a problem while getting news from database, check your data')
-        return "ok"    
+            self.log.exception('There was a problem while putting receipt to database, check your data')
+        return data_d   
         
     def delete_best(self, id_best):
         self.log.debug('Trying to DELETE best product from DB')
@@ -622,7 +667,7 @@ def main():
         #print(con.write_token("re@gmail.com", "secret1","1234567"))
         #print(con.get_receipt("1"))
         #print(con.user_info(3))
-        #print(con.delete_best(3))
+        print(con.get_news())
         
     except Exception:
 

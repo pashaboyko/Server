@@ -38,12 +38,31 @@ class RedisCon :
         self.redis.set(str("Server:id:"+str(key)) , data)
         if expire:
            self.redis.expire(str("Server:id:"+str(key)) ,expire)
-        self.log.debug("Set Data on Redis with key={key} and data{data}", extra={'key' : key , 'data' : data})    
+        self.log.debug("Set Data on Redis with key={key} and data={data}", extra={'key' : key , 'data' : data})
+
+    def setCode(self, email , code , expire=None):
+        self.redis.set(str("Server:email:"+str(email)) , code)
+        if expire:
+           self.redis.expire(str("Server:email:"+str(email)) ,code)
+        self.log.debug("Set Data on Redis with email={email} and code={code}", extra={'email' : email , 'code' : code})           
+
+
+    def searchCode(self,email, code) -> bool:
+        print('Server:email:'+str(email))
+        print(self.redis.get('Server:email:'+str(email)).decode())
+        print(code)
+        
+        if self.redis.get('Server:email:'+str(email)):
+            if self.redis.get('Server:email:'+str(email)).decode() == code:
+                self.log.debug("Code on Redis")      
+                return True
+       
+        self.log.debug("Token isn`t on Redis")      
+        return False 
 
 
     def searchTocken(self, token) -> bool:
         for key in self.redis.keys('Server:id:*'):
-            print("adsfkjdsabfk")
             if self.redis.get(key).decode() == token:
                 self.log.debug("Token on Redis")      
                 return True
