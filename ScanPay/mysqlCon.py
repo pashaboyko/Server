@@ -189,6 +189,7 @@ class MySqlCon:
                         data_dict = data
 
         except:
+            raise Exception("Cannot find admin")
             self.log.exception('Cannot find admin with : {barcode}',extra={'barcode' : barcode})
 
         return data_dict
@@ -467,7 +468,7 @@ class MySqlCon:
                 cursor.execute(sql2, (str(id_user)))
                 rv = cursor.fetchall()
                 if cursor.rowcount == 0:
-                    raise self.DoesNotExist
+                     raise Exception("no search")
                 else:
                     data_json = json.dumps(rv, ensure_ascii=False, separators=(',', ': '))
                     data_json = json.loads(data_json, encoding='UTF-8')
@@ -475,6 +476,7 @@ class MySqlCon:
                         data_dict.update({data.get("id_check_value") : data})
                     data_d = {"receipt" :data_dict }    
         except:
+            raise Exception("no search")
             self.log.exception('There was a problem while putting receipt to database, check your data')
         return data_d
             
@@ -639,9 +641,9 @@ class MySqlCon:
 
     def close(self):
         try:
-            self.self.log.debug("Trying to close conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+            self.log.debug("Trying to close conection -> {host}:{port}/{db}" , extra=self._mysql_con)
             self.connection.close()
-            self.self.log.debug("Successfully closed conection -> {host}:{port}/{db}" , extra=self._mysql_con)
+            self.log.debug("Successfully closed conection -> {host}:{port}/{db}" , extra=self._mysql_con)
 
         except:
             self.log.exception("Error with clossing conection {host}:{port}/{db}" , extra=self._mysql_con)

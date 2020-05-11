@@ -9,6 +9,7 @@ import sys
 import random
 
 
+
 from aiohttp import web
 import jwt
 
@@ -28,9 +29,17 @@ def json_response(body='', **kwargs):
     log.debug("start make json_response woth body: {body}",extra={'body' : body}) 
     kwargs['body'] = json.dumps(body or kwargs['body'], ensure_ascii=False)
     kwargs['content_type'] = 'application/json'
-    print(kwargs)
     log.debug("Starting to send son_response with datkwargsa -> {kwargs}", extra = {"kwargs": kwargs})
     return web.Response(**kwargs)
+
+async def test(request):
+    try:
+        item =  MySqlCon.get_instance().search_barcode("644832819197")
+    except Exception:
+        log.exception('POST get_user request wasn`t done')
+        return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
+    data_json = json.dumps(item)
+    return json_response(item)    
 
 
 
@@ -67,6 +76,7 @@ async def entering(request):
 
 async def get_user(request):
     post_data = await request.post()
+    print(post_data)
     log.debug("POST get_user request with post_data -> {post}", extra = {"post": post_data})
     try:
         item = MySqlCon.get_instance().search_barcode(post_data['barcode'])
@@ -80,7 +90,7 @@ async def get_news(request):
     try:
         item = MySqlCon.get_instance().get_news()
     except Exception:
-        log.exception('POST get_news request wasn`t done')
+        log.exception('GET get_news request wasn`t done')
         return json_response({'status': '400', 'message': 'Wrong credentials'}, status=400)
     data_json = json.dumps(item)
     return json_response(item)  
@@ -366,6 +376,7 @@ async def auth_middleware(app, handler):
 
 if __name__ == "__main__":
 
+    
     log_directory = 'log'
     log = logg.setup_logging('Server')
     log = logg.get_log("Web-server")
@@ -409,6 +420,7 @@ if __name__ == "__main__":
         app.router.add_route('GET', '/receipt', get_receipt)
         #app.router.add_route('POST', '/checkbarcode_true', checkbarcode_true)
         app.router.add_route('GET', '/user_info', user_info)
+        app.router.add_route('GET', '/test', test)
         app.router.add_route('GET', '/get_news', get_news)
 
         web.run_app(app, port=3000)
