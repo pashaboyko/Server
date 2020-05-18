@@ -30,21 +30,13 @@ ___
 ---
 ## Start with python 
 ```
-start python file with parameters or config file**
+start python file 
 ```
-
-### Parameters:
-- Port
-- Host
-
-### Example:
-``` 
-python3 -m server.py localhost 8080 
+```
+python3 -m web.py 
 
 ```
-```
-python3 -m configfile.yaml
-```
+
 
 ---
 
