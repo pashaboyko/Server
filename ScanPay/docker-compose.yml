@@ -1,5 +1,5 @@
 # Base config, overrided for local, uat and prod run
-version: '3.3'
+version: '1.0'
 
 services:
   scanpay-redis:
@@ -16,6 +16,17 @@ services:
       scanpay-net:
         aliases:
           - redis
+
+  web-server:
+    build:
+      context: .
+      dockerfile: web-server/Dockerfile
+    depends_on:
+      - scanpay-redis
+    environment:
+    
+    networks:
+      scanpay-net:
     
 
 networks:
