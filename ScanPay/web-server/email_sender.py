@@ -20,7 +20,7 @@ from typing import Dict
 SMTP_HOST='smtp.gmail.com'
 SMTP_PORT=587
 SMTP_SENDER = "pjoidrivedisk@gmail.com"
-SMTP_PASSWORD = "lock172839465lock"
+SMTP_PASSWORD = "password"
 
 
 class EmailSender():
